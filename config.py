@@ -1,0 +1,12 @@
+# SCREEN SETTINGS #
+SCREENWIDTH = 1280
+SCREENHEIGHT = 720
+FPS = 60
+
+# TILE SETTINGS #
+noOfTiles = 40
+TILE_SIZE = SCREENWIDTH / noOfTiles
+
+# ANIMATION #
+fill_speed = 3
+glow_duration = 1
