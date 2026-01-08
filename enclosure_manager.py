@@ -1,6 +1,7 @@
 import pygame
 import config
 from enclosure import Enclosure
+from menu import Menu
 
 class EnclosureManager:
     def __init__(self, screen):
@@ -9,6 +10,7 @@ class EnclosureManager:
         self.grid_x = 0
         self.grid_y = 0
         self.screen = screen
+        self.state = "READY"
 
         # Drawing #
         self.selected_enclosure = None
@@ -34,58 +36,85 @@ class EnclosureManager:
         self.fence_images.append(self.clip(self.fence, (1,3), 32,32))
         self.fence_images.append(self.clip(self.fence, (2,3), 32,32))
 
+        # Menu #
+        self.menu = Menu(screen)
+
 
     def update(self, grid_pos, dt): 
         self.grid_x, self.grid_y = grid_pos
 
-        # self.hovered_tile = grid_pos
-        self.hovered_enclosure = self.get_enclosure_at(self.grid_x, self.grid_y)
-        for enclosure in self.enclosures:
-            is_hovered = (enclosure == self.hovered_enclosure)
-            enclosure.update_hover(is_hovered, dt)
+        # Check if any other enclosure is selected
+        if self.selected_enclosure is None:
+            self.hovered_enclosure = self.get_enclosure_at(self.grid_x, self.grid_y)
+            for enclosure in self.enclosures:
+                is_hovered =  enclosure == self.hovered_enclosure#(enclosure == self.hovered_enclosure if self.selected_enclosure is None else False)
+                    # if enclosure.state is not "GLOWING":
+                enclosure.update_hover(is_hovered, dt)
 
+        # Handle Drawing #
         if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None:
             self.selected_enclosure.add_tile(self.grid_x, self.grid_y)
+
+        # Menu #
+        self.menu.update(dt)
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.is_drawing = True
-            self.startDrawing(self.grid_x, self.grid_y)
+            if self.state == "READY":
+                self.state = "SELECTED"
+                self.select_enclosure()
+                self.menu.show(self.selected_enclosure)
+                    
+            else:
+                if self.selected_enclosure.state is not "COMPLETE":
+                   self.startDrawing(self.grid_x, self.grid_y)
 
         elif event.type == pygame.MOUSEBUTTONUP:
-            self.is_drawing = False
-            self.finishDrawing()
+            if self.state == "SELECTED":
+               self.finishDrawing()
+
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if self.state == "SELECTED":
+                self.state = "READY"
+                self.deselect_enclosure()
+                print("!!!!!!!!!!!DESELECT")
+                self.menu.hide()
 
     def get_enclosure_at(self, x, y):
             for enclosure in self.enclosures:
                 if enclosure.tileWithinEnclosure(x, y):
                     return enclosure
             return None
+    
+    def select_enclosure(self):
+        self.selected_enclosure = self.get_enclosure_at(self.grid_x, self.grid_y)
 
-    def startDrawing(self, x, y):
-        self.is_drawing = True
-        print("DRAWING")
-
-        foundEnclosure = False
-        self.selected_enclosure = self.get_enclosure_at(x, y)
-
-        if foundEnclosure == False:
+        if self.selected_enclosure is None:
             self.selected_enclosure = Enclosure(self.next_id)
             self.enclosures.add(self.selected_enclosure)
             self.next_id += 1
             print("NEW ENCLOSURE")
 
+    def deselect_enclosure(self):
+        self.menu.hide()
+        self.selected_enclosure = None
+
+    def startDrawing(self, x, y):
+        self.is_drawing = True
+        print("DRAWING")
+
     def finishDrawing(self):
         print("FINISH")
-        if self.selected_enclosure.is_closed_loop():
-            print(self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()))
-            print("YES---------------------------")
-            self.selected_enclosure.calculate_fences()
-
-        # self.selected_enclosure._start_animation()
+        if self.selected_enclosure and self.selected_enclosure.state is not "COMPLETE":
+            if self.selected_enclosure.is_closed_loop():
+                print(self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()))
+                print("YES---------------------------")
+                self.selected_enclosure.calculate_fences()
+                # self.selected_enclosure.set_state_to("FILLING")
+                self.deselect_enclosure()
+                self.state = "READY"
 
         self.is_drawing = False
-        self.selected_enclosure = None
 
     def clip(self, surface, index, x_size, y_size):
         "Extract a small chunk of the image, index = (x,y)"
@@ -124,7 +153,7 @@ class EnclosureManager:
                 self.screen.blit(self.fence_images[image_index], (screenx, screeny))
 
             # Handle glow animation
-            if enclosure.state == "DRAWING":
+            if enclosure.state == "FILLING":
                 enclosure.update_animation()
 
             elif enclosure.state == "GLOWING":
@@ -143,3 +172,6 @@ class EnclosureManager:
                 self.glow_surface.set_alpha(int(enclosure.glow_intensity * 128))
 
                 self.screen.blit(self.glow_surface, (screenx, screeny))
+
+            # if self.state == "SELECTED":
+            self.menu.draw()

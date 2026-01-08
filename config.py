@@ -10,3 +10,4 @@ TILE_SIZE = SCREENWIDTH / noOfTiles
 # ANIMATION #
 fill_speed = 3
 glow_duration = 1
+menu_movement_speed = 6

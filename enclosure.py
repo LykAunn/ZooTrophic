@@ -9,7 +9,7 @@ class Enclosure:
         self.biome_type = "Grassland"
         self.color = (100, 200, 255)
         self.animals = []
-        self.state = "COMPLETE"
+        self.state = "READY"
         self.fill_queue = []
         self.fence_orientation = {}
 
@@ -69,7 +69,10 @@ class Enclosure:
         print(f"Start x,y: {start_x}, {start_y}")
         
         for nx, ny in self.get_adjacent_fence_tiles(start_x, start_y):
-          return self._traverse(nx, ny, start_x, start_y, visited, True)
+          if self._traverse(nx, ny, start_x, start_y, visited, True):
+              if len(visited) > len(self.fence_tiles) / 1.5:
+                  return True
+        return False
         
     def get_midpoint(self):
         x = 0
@@ -104,7 +107,7 @@ class Enclosure:
         return self.recursive_check(self.get_midpoint(), visited)
 
     def _floodBFS(self, location):
-        self.state = "DRAWING"
+        self.state = "FILLING"
         queue = [location]
         visited = set()
         x, y = location
@@ -135,7 +138,7 @@ class Enclosure:
             self.state = "GLOWING"
             self.glow_timer = 0
 
-        if self.state == "DRAWING":
+        if self.state == "FILLING":
             for _ in range(0, config.fill_speed):
                 if not self.fill_queue:
                     break
@@ -157,7 +160,7 @@ class Enclosure:
     def update_hover(self, is_hovered, dt):
         self.target_glow = 1.0 if is_hovered else 0.0
 
-        glow_speed = 5
+        glow_speed = 7
         difference = self.target_glow - self.glow_intensity
         self.glow_intensity += difference * glow_speed * dt
 
@@ -226,3 +229,6 @@ class Enclosure:
     def calculate_fences(self):
         for location in self.fence_tiles:
             self.fence_orientation.update({location: self.get_fence_sprite_index(location)})
+
+    def set_state_to(self, state):
+        self.state = state
