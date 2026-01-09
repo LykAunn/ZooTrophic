@@ -1,19 +1,19 @@
 import config
 import pygame
 
-class Menu:
-    """Base class for all Menu objects"""
-    def __init__(self, screen, y, visible, height, default_position):
+class TopPanel:
+    def __init__(self, screen):
         self.screen = screen
-        self.is_visible = visible
-        self.current_y = y
-        self.target_y = y
-        self.menu_height = height
+        self.is_visible = True
+        self.current_y = -50
+        self.target_y = -50
+        self.menu_height = 50
         self.slide_speed = config.menu_movement_speed
-        self.default_position = default_position
+
+        self.buttons = []
 
     def show(self):
-        self.target_y = self.default_position - self.menu_height
+        self.target_y = 0
         self.is_visible = True
 
     def update(self,dt):
@@ -25,7 +25,7 @@ class Menu:
             self.current_y = self.target_y
 
     def draw(self):
-        if self.current_y >= config.SCREENHEIGHT:
+        if self.current_y <= -50:
             return
         
         menu_rect = pygame.Rect(0, int(self.current_y), config.SCREENWIDTH, self.menu_height)
@@ -36,4 +36,4 @@ class Menu:
 
     def hide(self):
         self.selected_enclosure = None
-        self.target_y = config.SCREENHEIGHT
+        self.target_y = -50

@@ -1,7 +1,6 @@
 import pygame
 import config
-from enclosure_manager import EnclosureManager
-
+from gamestate import GameManager
 
 # Setup
 pygame.init()
@@ -10,7 +9,7 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 
-enclosure = EnclosureManager(screen)
+gameManager = GameManager(screen)
 
 grass = pygame.image.load('resources/grass4.png').convert()
 grass = pygame.transform.scale(grass, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
@@ -29,13 +28,10 @@ while running:
 
     for event in pygame.event.get():
 
-        enclosure.handle_event(event)
+        gameManager.handle_event(event)
 
         if event.type == pygame.QUIT:
             running = False
-
-    #screen.fill("darkolivegreen2")
-    #pygame.draw.circle(screen, "red", (xpos,400), 40, 5)
 
     tile = pygame.Rect(0, 0, config.TILE_SIZE, config.TILE_SIZE)
 
@@ -43,28 +39,16 @@ while running:
         for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
             color = "darkolivegreen2"
 
-            # if x > (config.SCREENWIDTH / 2):
-            #     color = "red"
-            # else:
-            #     color = "darkolivegreen2"
-
             tile.left = x
             screen.blit(grass, (x, y))
             
         tile.top = y
         tile.left = 0
 
-    # for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
-    #     pygame.draw.line(screen, "black", (x, 0), (x, config.SCREENHEIGHT))
-
-    # for y in range(0, int(config.SCREENHEIGHT), int(config.TILE_SIZE)):
-    #     pygame.draw.line(screen, "black", (0, y), (config.SCREENWIDTH, y))
-
-
     mousepos = pygame.mouse.get_pos()
 
-    enclosure.update(((mousepos[0] // config.TILE_SIZE), (mousepos[1] // config.TILE_SIZE)), dt)
-    enclosure.draw_enclosures(dt)
+    gameManager.update(dt, mousepos)
+    gameManager.draw(dt)
 
     screen.blit(chicken, (100, 100))
     

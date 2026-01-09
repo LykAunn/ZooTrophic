@@ -1,7 +1,6 @@
 import pygame
 import config
 from enclosure import Enclosure
-from menu import Menu
 
 class EnclosureManager:
     def __init__(self, screen):
@@ -22,7 +21,7 @@ class EnclosureManager:
         self.fence = pygame.image.load('resources/fence.png').convert_alpha()
         self.fence_images = []
 
-        self.sand = pygame.image.load('sand.png').convert()
+        self.sand = pygame.image.load('resources/sand.png').convert()
         self.sand = pygame.transform.scale(self.sand, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
 
         self.glow_surface = pygame.Surface((config.TILE_SIZE, config.TILE_SIZE))
@@ -35,10 +34,6 @@ class EnclosureManager:
         self.fence_images.append(self.clip(self.fence, (0, 3), 32,32))
         self.fence_images.append(self.clip(self.fence, (1,3), 32,32))
         self.fence_images.append(self.clip(self.fence, (2,3), 32,32))
-
-        # Menu #
-        self.menu = Menu(screen)
-
 
     def update(self, grid_pos, dt): 
         self.grid_x, self.grid_y = grid_pos
@@ -54,16 +49,12 @@ class EnclosureManager:
         # Handle Drawing #
         if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None:
             self.selected_enclosure.add_tile(self.grid_x, self.grid_y)
-
-        # Menu #
-        self.menu.update(dt)
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state == "READY":
                 self.state = "SELECTED"
                 self.select_enclosure()
-                self.menu.show(self.selected_enclosure)
                     
             else:
                 if self.selected_enclosure.state is not "COMPLETE":
@@ -78,7 +69,6 @@ class EnclosureManager:
                 self.state = "READY"
                 self.deselect_enclosure()
                 print("!!!!!!!!!!!DESELECT")
-                self.menu.hide()
 
     def get_enclosure_at(self, x, y):
             for enclosure in self.enclosures:
@@ -96,7 +86,6 @@ class EnclosureManager:
             print("NEW ENCLOSURE")
 
     def deselect_enclosure(self):
-        self.menu.hide()
         self.selected_enclosure = None
 
     def startDrawing(self, x, y):
@@ -174,4 +163,3 @@ class EnclosureManager:
                 self.screen.blit(self.glow_surface, (screenx, screeny))
 
             # if self.state == "SELECTED":
-            self.menu.draw()
