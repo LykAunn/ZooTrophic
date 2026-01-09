@@ -55,9 +55,12 @@ class EnclosureManager:
             if self.state == "READY":
                 self.state = "SELECTED"
                 self.select_enclosure()
+            elif self.selected_enclosure.state == "COMPLETE":
+                if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):
+                    self.deselect_enclosure()
                     
             else:
-                if self.selected_enclosure.state is not "COMPLETE":
+                if self.selected_enclosure.state != "COMPLETE":
                    self.startDrawing(self.grid_x, self.grid_y)
 
         elif event.type == pygame.MOUSEBUTTONUP:
@@ -66,7 +69,6 @@ class EnclosureManager:
 
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             if self.state == "SELECTED":
-                self.state = "READY"
                 self.deselect_enclosure()
                 print("!!!!!!!!!!!DESELECT")
 
@@ -87,6 +89,7 @@ class EnclosureManager:
 
     def deselect_enclosure(self):
         self.selected_enclosure = None
+        self.state = "READY"
 
     def startDrawing(self, x, y):
         self.is_drawing = True
@@ -94,7 +97,7 @@ class EnclosureManager:
 
     def finishDrawing(self):
         print("FINISH")
-        if self.selected_enclosure and self.selected_enclosure.state is not "COMPLETE":
+        if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
             if self.selected_enclosure.is_closed_loop():
                 print(self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()))
                 print("YES---------------------------")

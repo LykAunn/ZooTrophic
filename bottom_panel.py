@@ -1,6 +1,7 @@
 import pygame
 import config
 from menu import Menu
+from button import Button
 
 class BottomPanel(Menu):
     def __init__(self, screen):
@@ -8,6 +9,7 @@ class BottomPanel(Menu):
 
         self.selected_enclosure = None
         self.buttons = []
+        self.button = Button(pygame.Rect(20, self.current_y + 50, 100, 20), "BUILD")
 
     def show(self, enclosure):
         self.selected_enclosure = enclosure
@@ -22,4 +24,12 @@ class BottomPanel(Menu):
 
         pygame.draw.rect(self.screen, "darkgoldenrod4", menu_rect)
         pygame.draw.rect(self.screen, "black", menu_rect, 2)
-        print("DRAW MENU")
+
+        self.button.draw(self.screen)
+
+    def update(self, dt):
+        super().update(dt)
+        self.button.update_ypos(self.current_y + 50)
+
+    def handle_event(self, event):
+        self.button.handle_event(event)

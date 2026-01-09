@@ -1,5 +1,6 @@
 import config
 import pygame
+from button import Button
 
 class Menu:
     """Base class for all Menu objects"""
@@ -32,7 +33,6 @@ class Menu:
 
         pygame.draw.rect(self.screen, "darkgoldenrod4", menu_rect)
         pygame.draw.rect(self.screen, "black", menu_rect, 2)
-        print("DRAW MENU")
 
     def hide(self):
         self.selected_enclosure = None

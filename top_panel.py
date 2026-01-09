@@ -32,7 +32,6 @@ class TopPanel:
 
         pygame.draw.rect(self.screen, "darkgoldenrod4", menu_rect)
         pygame.draw.rect(self.screen, "black", menu_rect, 2)
-        print("DRAW MENU")
 
     def hide(self):
         self.selected_enclosure = None

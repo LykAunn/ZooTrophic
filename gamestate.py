@@ -27,6 +27,7 @@ class GameManager:
         #     return
         
         self.enclosure_manager.handle_event(event)
+        self.menu_manager.bottom_panel.handle_event(event)
     
     def draw(self, dt):
         self.enclosure_manager.draw_enclosures(dt)
