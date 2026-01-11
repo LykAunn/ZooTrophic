@@ -4,7 +4,7 @@ from button import Button
 
 class Menu:
     """Base class for all Menu objects"""
-    def __init__(self, screen, y, visible, height, default_position):
+    def __init__(self, screen, y, visible, height, default_position, game_manager):
         self.screen = screen
         self.is_visible = visible
         self.current_y = y
@@ -12,6 +12,7 @@ class Menu:
         self.menu_height = height
         self.slide_speed = config.menu_movement_speed
         self.default_position = default_position
+        self.game_manager = game_manager
 
     def show(self):
         self.target_y = self.default_position - self.menu_height

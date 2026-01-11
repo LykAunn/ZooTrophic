@@ -35,7 +35,6 @@ class Button:
 
     def draw(self, surface):
         color = self.hover_color if self.hovered else self.bg_color
-        print("DRWAING")
 
         pygame.draw.rect(surface, color, self.rect)
 

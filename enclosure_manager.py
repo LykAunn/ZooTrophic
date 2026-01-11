@@ -53,8 +53,8 @@ class EnclosureManager:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state == "READY":
-                self.state = "SELECTED"
-                self.select_enclosure()
+                if self.select_enclosure() is not None:
+                    self.state = "SELECTED"
             elif self.selected_enclosure.state == "COMPLETE":
                 if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):
                     self.deselect_enclosure()
@@ -82,10 +82,21 @@ class EnclosureManager:
         self.selected_enclosure = self.get_enclosure_at(self.grid_x, self.grid_y)
 
         if self.selected_enclosure is None:
-            self.selected_enclosure = Enclosure(self.next_id)
-            self.enclosures.add(self.selected_enclosure)
-            self.next_id += 1
-            print("NEW ENCLOSURE")
+            return None
+        else:
+            return 1
+
+        # if self.selected_enclosure is None:
+        #     self.selected_enclosure = Enclosure(self.next_id)
+        #     self.enclosures.add(self.selected_enclosure)
+        #     self.next_id += 1
+        #     print("NEW ENCLOSURE")
+
+    def new_enclosure(self):
+        self.selected_enclosure = Enclosure(self.next_id)
+        self.enclosures.add(self.selected_enclosure)
+        self.next_id += 1
+        print("NEW ENCLOSURE")
 
     def deselect_enclosure(self):
         self.selected_enclosure = None
@@ -166,3 +177,6 @@ class EnclosureManager:
                 self.screen.blit(self.glow_surface, (screenx, screeny))
 
             # if self.state == "SELECTED":
+
+    def change_state(self, newState):
+        self.state = newState

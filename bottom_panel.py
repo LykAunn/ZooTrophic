@@ -4,8 +4,8 @@ from menu import Menu
 from button import Button
 
 class BottomPanel(Menu):
-    def __init__(self, screen):
-        super().__init__(screen, config.SCREENHEIGHT, False, 150, config.SCREENHEIGHT)
+    def __init__(self, screen, game_manager):
+        super().__init__(screen, config.SCREENHEIGHT, False, 150, config.SCREENHEIGHT, game_manager)
 
         self.selected_enclosure = None
         self.buttons = []
