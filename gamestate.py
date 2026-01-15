@@ -1,5 +1,5 @@
 from enclosure_manager import EnclosureManager
-from menu_manager import MenuManager
+from UI.menu_manager import MenuManager
 import config
 
 class GameManager:

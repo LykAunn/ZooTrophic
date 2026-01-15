@@ -1,6 +1,6 @@
-from bottom_panel import BottomPanel
-from top_menu import TopPanel
-from bottom_menu import BottomMenu
+from UI.bottom_panel import BottomPanel
+from UI.top_menu import TopPanel
+from UI.bottom_menu import BottomMenu
 
 class MenuManager:
     def __init__(self, screen, game_manager):
@@ -8,7 +8,7 @@ class MenuManager:
         self.game_manager = game_manager
         self.bottom_panel = BottomPanel(screen, game_manager)
         self.top_panel = TopPanel(screen)
-        self.bottom_menu = BottomMenu(screen, 50, game_manager)
+        self.bottom_menu = BottomMenu(screen, 80, game_manager)
         self.selected_enclosure = None
         self.top_visible = True
         self.bottom_visible = False

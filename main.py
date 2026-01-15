@@ -4,7 +4,7 @@ from gamestate import GameManager
 
 # Setup
 pygame.init()
-screen = pygame.display.set_mode((config.SCREENWIDTH,config.SCREENHEIGHT))
+screen = pygame.display.set_mode((config.SCREENWIDTH,config.SCREENHEIGHT), pygame.RESIZABLE)
 clock = pygame.time.Clock()
 running = True
 dt = 0

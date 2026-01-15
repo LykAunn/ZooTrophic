@@ -7,7 +7,7 @@ class TopPanel:
         self.is_visible = True
         self.current_y = -50
         self.target_y = -50
-        self.menu_height = 50
+        self.menu_height = 30
         self.slide_speed = config.menu_movement_speed
 
         self.buttons = []
@@ -30,8 +30,8 @@ class TopPanel:
         
         menu_rect = pygame.Rect(0, int(self.current_y), config.SCREENWIDTH, self.menu_height)
 
-        pygame.draw.rect(self.screen, "darkgoldenrod4", menu_rect)
-        pygame.draw.rect(self.screen, "black", menu_rect, 2)
+        pygame.draw.rect(self.screen, 0x9D7750, menu_rect)
+        # pygame.draw.rect(self.screen, "black", menu_rect, 2)
 
     def hide(self):
         self.selected_enclosure = None

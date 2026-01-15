@@ -44,3 +44,6 @@ class Button:
         text_surf = font.render(self.text, True, self.text_color)
         text_rect = text_surf.get_rect(center=self.rect.center)
         surface.blit(text_surf, text_rect)
+
+    def setx(self, x):
+        self.rect.left = x

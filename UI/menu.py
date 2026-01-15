@@ -1,6 +1,6 @@
 import config
 import pygame
-from button import Button
+from UI.button import Button
 
 class Menu:
     """Base class for all Menu objects"""

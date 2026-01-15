@@ -6,6 +6,7 @@ FPS = 60
 # TILE SETTINGS #
 noOfTiles = 40
 TILE_SIZE = SCREENWIDTH / noOfTiles
+pixel_size = 2
 
 # ANIMATION #
 fill_speed = 3
