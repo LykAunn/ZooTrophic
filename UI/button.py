@@ -1,13 +1,14 @@
 import pygame
 
 class Button:
-    def __init__(self, rect, text, callback = None):
+    def __init__(self, rect,text = None,  callback = None):
         self.rect = pygame.Rect(rect)
         self.text = text
         self.callback = callback
         
         self.hovered = False
         self.pressed = False
+        self.visible = True
 
         self.bg_color = (60,60,60)
         self.hover_color = "green"#(80,80,80)
@@ -16,19 +17,22 @@ class Button:
         self.border_width = 2
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEMOTION:
-            self.hovered = self.rect.collidepoint(event.pos)
+        if self.visible is True:
+            if event.type == pygame.MOUSEMOTION:
+                self.hovered = self.rect.collidepoint(event.pos)
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and self.hovered:
-                self.pressed = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and self.hovered:
+                    self.pressed = True
 
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1 and self.pressed and self.hovered:
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1 and self.pressed and self.hovered:
+                    self.pressed = False
+                    if self.callback:
+                        return self.callback()
+                    else:
+                        print("no callback")
                 self.pressed = False
-                if self.callback:
-                    return self.callback()
-            self.pressed = False
 
     def update_ypos(self, y):
         self.rect.top = y
@@ -47,3 +51,9 @@ class Button:
 
     def setx(self, x):
         self.rect.left = x
+        
+    def show(self):
+        self.visible = True
+
+    def hide(self):
+        self.visible = False

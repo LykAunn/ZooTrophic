@@ -58,7 +58,7 @@ class EnclosureManager:
             elif self.selected_enclosure.state == "COMPLETE":
                 if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):
                     self.deselect_enclosure()
-                    
+                        
             else:
                 if self.selected_enclosure.state != "COMPLETE":
                    self.startDrawing(self.grid_x, self.grid_y)

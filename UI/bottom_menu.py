@@ -1,6 +1,7 @@
 from UI.menu import Menu
 import config
 from UI.button import Button
+from UI.button_icon import ButtonIcon
 import pygame
 
 class BottomMenu(Menu):
@@ -12,30 +13,46 @@ class BottomMenu(Menu):
 
         self.state = 0 # 0 = Main , 1 = Contruct
         self.x = (config.SCREENWIDTH / 2) - (self.menu_image.get_width() / 2)
+
+        self.button_set1_config = [("Construct", self.on_construct_clicked), ("Market", game_manager.on_build_clicked),
+                               ("Staff", None), ("Research", None), ("Overview", None)]
         
-        self.construct_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Construct", self.on_construct_clicked)
-        self.market_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Market", game_manager.on_build_clicked)
-        self.staff_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Staff", None)
-        self.research_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Research", None)
-        self.overview_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Overview", None)
-        self.firstSet = [self.construct_button, self.market_button, self.staff_button, self.research_button, self.overview_button]
+        self.buttonIcon = ButtonIcon("resources/chicken.png", "resources/grass.png", config.SCREENHEIGHT, self.x + 20, game_manager.on_build_clicked)
 
         # self.build_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Construct", game_manager.on_build_clicked)
 
-        self.spacing = (self.menu_image.get_width() - (100 * len(self.firstSet))) / (len(self.firstSet) + 1)
+        self.firstSet = self.create_button_row(self.button_set1_config, 50)
 
-        for i in range (0, len(self.firstSet)):
-            self.firstSet[i].setx(self.x + (self.spacing * (i + 1)) + (100 * i))
+    def create_button_row(self, button_config, y_offset, button_width = 100, button_height = 20):
+        buttons = []
+        num_of_buttons = len(button_config)
+
+        menu_width = self.menu_image.get_width() if hasattr(self, 'menu_image') else config.SCREENWIDTH
+        spacing = (menu_width - (button_width * num_of_buttons)) / (num_of_buttons + 1)
+
+        for i,(text, callback) in enumerate(button_config):
+            x_pos = self.x + (spacing * (i + 1)) + (button_width * i)
+            rect = pygame.Rect(x_pos, config.SCREENHEIGHT + y_offset, button_width, button_height)
+            button = Button(rect, text, callback)
+            buttons.append(button)
+
+        return buttons
 
     def update(self, dt):
         super().update(dt)
         for i in range(len(self.firstSet)):
-            self.firstSet[i].update_ypos(self.current_y + 20)
+            self.firstSet[i].update_ypos(self.current_y + 50)
+
+        if self.state == 1:
+            self.buttonIcon.update_ypos(self.current_y + 100)
 
     def handle_event(self, event):
         if self.is_visible:
             for i in range(len(self.firstSet)):
                 self.firstSet[i].handle_event(event)
+
+            if self.state == 1:
+                self.buttonIcon.handle_event(event)
 
     def draw(self):
         self.screen.blit(self.menu_image, (self.x, self.current_y))
@@ -45,5 +62,15 @@ class BottomMenu(Menu):
             for i in range (0, len(self.firstSet)):
                 self.firstSet[i].draw(self.screen)
 
+        elif self.state == 1:
+            self.buttonIcon.draw(self.screen)
+
+    def hide_all_buttons(self, button_set):
+        for i in range(0, len(button_set)):
+            button_set[i].hide()
+
     def on_construct_clicked(self):
+        self.target_y = config.SCREENHEIGHT - self.menu_image.get_height()
         self.state = 1
+        self.hide_all_buttons(self.firstSet)
+        self.buttonIcon.show()
