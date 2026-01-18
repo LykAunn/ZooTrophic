@@ -1,4 +1,5 @@
 import pygame
+import config
 
 class Button:
     def __init__(self, rect,text = None,  callback = None):
@@ -9,6 +10,8 @@ class Button:
         self.hovered = False
         self.pressed = False
         self.visible = True
+        self.current_y = self.rect.top
+        self.target_y = self.current_y
 
         self.bg_color = (60,60,60)
         self.hover_color = "green"#(80,80,80)
@@ -34,10 +37,20 @@ class Button:
                         print("no callback")
                 self.pressed = False
 
-    def update_ypos(self, y):
-        self.rect.top = y
+    def update_ypos(self, y, dt):
+        if abs(self.current_y - self.target_y) > 0.5:
+            diff = self.target_y - self.current_y
+            self.current_y += diff * config.menu_movement_speed * dt
+
+        else:
+            self.current_y = self.target_y
+
+        self.rect.top = self.current_y
 
     def draw(self, surface):
+        if self.current_y >= config.SCREENHEIGHT:
+            return
+        
         color = self.hover_color if self.hovered else self.bg_color
 
         pygame.draw.rect(surface, color, self.rect)
@@ -56,4 +69,7 @@ class Button:
         self.visible = True
 
     def hide(self):
-        self.visible = False
+        self.target_y = config.SCREENHEIGHT
+
+    def set_target_y(self, y):
+        self.target_y = y

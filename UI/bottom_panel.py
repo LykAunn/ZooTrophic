@@ -29,7 +29,7 @@ class BottomPanel(Menu):
 
     def update(self, dt):
         super().update(dt)
-        self.button.update_ypos(self.current_y + 25)
+        self.button.update_ypos(self.current_y + 25, dt)
 
     def handle_event(self, event):
         self.button.handle_event(event)

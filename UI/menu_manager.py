@@ -11,7 +11,7 @@ class MenuManager:
         self.bottom_menu = BottomMenu(screen, 80, game_manager)
         self.selected_enclosure = None
         self.top_visible = True
-        self.bottom_visible = False
+        self.bottom_menu_visible = False
 
         self.top_panel.show()
         self.bottom_menu.show()
@@ -24,7 +24,7 @@ class MenuManager:
 
         elif whichPanel == 1:
             self.bottom_panel.show(enclosure)
-            self.bottom_visible = True
+            self.bottom_menu_visible = True
 
         elif whichPanel == 2:
             self.bottom_menu.show()
@@ -36,7 +36,7 @@ class MenuManager:
 
         elif whichPanel == 1:
             self.bottom_panel.hide()
-            self.bottom_visible = False
+            self.bottom_menu_visible = False
 
         elif whichPanel == 2:
             self.bottom_menu.hide()

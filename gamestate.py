@@ -15,12 +15,12 @@ class GameManager:
         self.menu_manager.update(dt)
 
         if self.enclosure_manager.selected_enclosure:
-            if not self.menu_manager.bottom_visible:
+            if not self.menu_manager.bottom_menu_visible:
                 self.menu_manager.show(self.enclosure_manager.selected_enclosure, 1)
                 self.menu_manager.hide(2)
 
         else:
-            if self.menu_manager.bottom_visible:
+            if self.menu_manager.bottom_menu_visible:
                 self.menu_manager.show(None, 2)
                 self.menu_manager.hide(1)
 

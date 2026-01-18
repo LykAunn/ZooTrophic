@@ -53,5 +53,3 @@ while running:
     screen.blit(chicken, (100, 100))
     
     pygame.display.flip()
-
-pygame.quit()

@@ -17,7 +17,7 @@ class BottomMenu(Menu):
         self.button_set1_config = [("Construct", self.on_construct_clicked), ("Market", game_manager.on_build_clicked),
                                ("Staff", None), ("Research", None), ("Overview", None)]
         
-        self.buttonIcon = ButtonIcon("resources/chicken.png", "resources/grass.png", config.SCREENHEIGHT, self.x + 20, game_manager.on_build_clicked)
+        self.buttonIcon = ButtonIcon("resources/chicken.png", "resources/grass.png", config.SCREENHEIGHT, self.x + 20, self.on_build_clicked)
 
         # self.build_button = Button(pygame.Rect(20, self.current_y + 20, 100, 20), "Construct", game_manager.on_build_clicked)
 
@@ -32,7 +32,7 @@ class BottomMenu(Menu):
 
         for i,(text, callback) in enumerate(button_config):
             x_pos = self.x + (spacing * (i + 1)) + (button_width * i)
-            rect = pygame.Rect(x_pos, config.SCREENHEIGHT + y_offset, button_width, button_height)
+            rect = pygame.Rect(x_pos, config.SCREENHEIGHT, button_width, button_height)
             button = Button(rect, text, callback)
             buttons.append(button)
 
@@ -41,10 +41,9 @@ class BottomMenu(Menu):
     def update(self, dt):
         super().update(dt)
         for i in range(len(self.firstSet)):
-            self.firstSet[i].update_ypos(self.current_y + 50)
+            self.firstSet[i].update_ypos(self.current_y + 50, dt)
 
-        if self.state == 1:
-            self.buttonIcon.update_ypos(self.current_y + 100)
+        self.buttonIcon.update_ypos(self.current_y + 100, dt)
 
     def handle_event(self, event):
         if self.is_visible:
@@ -69,8 +68,26 @@ class BottomMenu(Menu):
         for i in range(0, len(button_set)):
             button_set[i].hide()
 
+    def show_all_buttons(self, button_set):
+        for i in range(0, len(button_set)):
+            button_set[i].set_target_y(self.target_y + 30)
+
     def on_construct_clicked(self):
         self.target_y = config.SCREENHEIGHT - self.menu_image.get_height()
         self.state = 1
         self.hide_all_buttons(self.firstSet)
-        self.buttonIcon.show()
+        self.buttonIcon.set_target_y(self.current_y)
+
+    def on_build_clicked(self):
+        self.game_manager.on_build_clicked()
+        self.buttonIcon.hide()
+        self.state = 0
+
+    def show(self):
+        super().show()
+        for i in range(len(self.firstSet)):
+            self.firstSet[i].set_target_y(self.target_y + (self.menu_height / 2))
+
+    def hide(self):
+        super().hide()
+        self.hide_all_buttons(self.firstSet)

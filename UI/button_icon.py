@@ -1,4 +1,5 @@
 import pygame
+import config
 from UI.button import Button
 
 class ButtonIcon(Button):
@@ -10,9 +11,8 @@ class ButtonIcon(Button):
         self.current_image = self.image
 
         self.current_x = x
-        self.current_y = y
 
-        self.visible = False
+        self.visible = True
 
     def handle_event(self, event):
         super().handle_event(event)
@@ -21,10 +21,9 @@ class ButtonIcon(Button):
             self.current_image = self.image_pressed
         else:
             self.current_image = self.image
-
-    def update_ypos(self, y):
-        super().update_ypos(y)
-        self.current_y = y
     
     def draw(self, screen):
+        if self.current_y >= config.SCREENHEIGHT:
+            return
+        
         screen.blit(self.current_image, (self.current_x, self.current_y))
