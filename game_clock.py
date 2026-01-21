@@ -14,7 +14,6 @@ class GameClock:
         self.time_scale = 1.0
         self.skipping_night = False
 
-
         # Callbacks
         self.on_phase_change = []
         self.on_new_day = []
@@ -61,15 +60,15 @@ class GameClock:
             if self.skipping_night and self.phase == "dawn":
                 self.stop_skip_night()
 
-        for callback in self.on_hour_change:
-            callback(self.time)
+        # for callback in self.on_hour_change:
+        #     callback(self.time)
 
     def increment_day(self):
         self.day += 1
         
         if self.day > 30:
             self.day = 1
-            self.increment_month
+            self.increment_month()
         
         for callback in self.on_new_day:
             callback(self.day, self.month, self.year)
@@ -79,7 +78,7 @@ class GameClock:
 
         if self.month > 12:
             self.month = 1
-            self.increment_year
+            self.increment_year()
 
     def increment_year(self):
         self.year += 1

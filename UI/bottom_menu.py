@@ -33,7 +33,7 @@ class BottomMenu(Menu):
         for i,(text, callback) in enumerate(button_config):
             x_pos = self.x + (spacing * (i + 1)) + (button_width * i)
             rect = pygame.Rect(x_pos, config.SCREENHEIGHT, button_width, button_height)
-            button = Button(rect, text, callback)
+            button = Button(rect, text = text, callback = callback)
             buttons.append(button)
 
         return buttons
@@ -56,13 +56,10 @@ class BottomMenu(Menu):
     def draw(self):
         self.screen.blit(self.menu_image, (self.x, self.current_y))
 
-        if self.state == 0:
+        for i in range (0, len(self.firstSet)):
+            self.firstSet[i].draw(self.screen)
 
-            for i in range (0, len(self.firstSet)):
-                self.firstSet[i].draw(self.screen)
-
-        elif self.state == 1:
-            self.buttonIcon.draw(self.screen)
+        self.buttonIcon.draw(self.screen)
 
     def hide_all_buttons(self, button_set):
         for i in range(0, len(button_set)):

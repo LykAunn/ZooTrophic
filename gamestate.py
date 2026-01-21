@@ -1,5 +1,6 @@
 from enclosure_manager import EnclosureManager
 from UI.menu_manager import MenuManager
+from game_clock import GameClock
 import config
 
 class GameManager:
@@ -7,12 +8,15 @@ class GameManager:
         self.screen = screen
         self.menu_manager = MenuManager(screen, self)
         self.enclosure_manager = EnclosureManager(screen)
+        self.game_clock = GameClock()
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
 
+        game_dt = self.game_clock.update(dt)
+
         self.enclosure_manager.update(grid_pos, dt)
-        self.menu_manager.update(dt)
+        self.menu_manager.update(game_dt)
 
         if self.enclosure_manager.selected_enclosure:
             if not self.menu_manager.bottom_menu_visible:

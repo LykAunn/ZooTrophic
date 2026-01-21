@@ -6,7 +6,7 @@ class ButtonIcon(Button):
     def __init__(self, image_path, image_path_clicked, y, x, callback = None):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image_pressed = pygame.image.load(image_path_clicked).convert_alpha()
-        super().__init__(pygame.Rect(x ,y, self.image.get_width(), self.image.get_height()) ,callback=callback)
+        super().__init__(pygame.Rect(x ,y, self.image.get_width(), self.image.get_height()) ,callback=callback,)
         
         self.current_image = self.image
 

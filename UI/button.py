@@ -2,7 +2,7 @@ import pygame
 import config
 
 class Button:
-    def __init__(self, rect,text = None,  callback = None):
+    def __init__(self, rect, default_x = 0.0, default_y = config.SCREENHEIGHT + 50, text = None,  callback = None):
         self.rect = pygame.Rect(rect)
         self.text = text
         self.callback = callback
@@ -18,6 +18,9 @@ class Button:
         self.text_color = (255, 255, 255)
         self.border_color = (100, 100, 100)
         self.border_width = 2
+
+        self.default_x = default_x
+        self.default_y = default_y
 
     def handle_event(self, event):
         if self.visible is True:
@@ -69,7 +72,7 @@ class Button:
         self.visible = True
 
     def hide(self):
-        self.target_y = config.SCREENHEIGHT
+        self.target_y = self.default_y
 
     def set_target_y(self, y):
         self.target_y = y
