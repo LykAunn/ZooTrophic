@@ -32,7 +32,7 @@ class BottomMenu(Menu):
 
         for i,(text, callback) in enumerate(button_config):
             x_pos = self.x + (spacing * (i + 1)) + (button_width * i)
-            rect = pygame.Rect(x_pos, config.SCREENHEIGHT, button_width, button_height)
+            rect = pygame.Rect(x_pos, config.SCREENHEIGHT + 50, button_width, button_height)
             button = Button(rect, text = text, callback = callback)
             buttons.append(button)
 

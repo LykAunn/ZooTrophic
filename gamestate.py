@@ -1,6 +1,7 @@
 from enclosure_manager import EnclosureManager
 from UI.menu_manager import MenuManager
 from game_clock import GameClock
+from cursor import Cursor
 import config
 
 class GameManager:
@@ -9,6 +10,7 @@ class GameManager:
         self.menu_manager = MenuManager(screen, self)
         self.enclosure_manager = EnclosureManager(screen)
         self.game_clock = GameClock()
+        self.cursor = Cursor(screen, "resources/sand.png")
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -17,6 +19,7 @@ class GameManager:
 
         self.enclosure_manager.update(grid_pos, dt)
         self.menu_manager.update(game_dt)
+        self.cursor.update(grid_pos[0], grid_pos[1])
 
         if self.enclosure_manager.selected_enclosure:
             if not self.menu_manager.bottom_menu_visible:
@@ -28,6 +31,7 @@ class GameManager:
                 self.menu_manager.show(None, 2)
                 self.menu_manager.hide(1)
 
+
     def handle_event(self, event):
         # if self.menu_manager.handle_event(event):
         #     return
@@ -38,6 +42,7 @@ class GameManager:
     
     def draw(self, dt):
         self.enclosure_manager.draw_enclosures(dt)
+        self.cursor.draw_cursor()
         self.menu_manager.draw_menus()
 
     def on_build_clicked(self):
