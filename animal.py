@@ -35,8 +35,8 @@ class Animal:
         self.boredom = 0.0
         self.social_need = 50.0
 
-        # Behaviour state  
-        self.state = "idle"
+        # Behaviour state
+        self.state = "waiting"
         self.activity_timer = 0.0
         self.last_fed = 0
         self.last_drank = 0
@@ -44,13 +44,13 @@ class Animal:
 
         # Movement
         self.time_till_next_move = 0.0
-        self.jump_timer = 0.0
+        self.timer = 0.0
         self.jump_duration = 0.0
         self.max_jump_height = 15
-        self.max_move_distance = 15
-        self.jumpx = 0                   # Pixels to move in that current jump
-        self.jumpy = 0
-        self.dxdy = (0,0)
+        self.max_move_distance = 25
+        self.jump_x = 0                   # Pixels to move in that current jump
+        self.jump_y = 0
+        self.dydx = (0,0)
         self.start_location = (x, y)
 
         # Position and movement
@@ -60,9 +60,17 @@ class Animal:
         self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.speed = 2.0
         self.direction = "south"
+        self.find_new_tile()
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
+
+    def set_animal_state(self, state):
+        self.state = state
+
+    def set_animal_tile(self, tile):
+        self.coords = tile
+        self.screen_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
 
     def draw(self):
         self.screen.blit(self.image, self.screen_coords)
@@ -71,48 +79,90 @@ class Animal:
         if self.state == "moving":
             self.update_jump(dt)
 
+        elif self.state == "idle":
+            self.timer += dt
+            if self.timer > self.activity_timer:
+                self.timer = 0.0
+                if self.target_coords == self.coords:
+                    self.find_new_tile()
+                else:
+                    self.start_moving()
 
 # --- Pathfinding ---
 
     def find_new_tile(self):
-        x, y = random.choice(self.enclosure.interior_tiles)
-        self.target_coords = (x, y)
-        self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
+        """Finds new tile to wander to"""
+        if self.enclosure:
+            x, y = random.choice(list(self.enclosure.interior_tiles))
+            self.target_coords = (x, y)
+            self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
+            print(f"x: {x}, y:{y}")
+            self.calculate_coord_diff()
 
     def start_moving(self):
+        """Initial calculation for jump"""
         self.state = "moving"
         self.jump_duration = random.randrange(1, 2)
-        self.jump_progress = 0.0
-        # self.dxdy = self.target_screen_coords - self.screen_coords
-        # if self.dxdy[0] < self.max_move_distance and self.dxdy[1] < self.max_jump_height:
-        #     self.jumpx = self.dxdy[0]
-        #     self.jumpy = self.dxdy[1]
-        # else:
-        #     self.jumpx = random.randrange(5, self.max_move_distance)
-        #     self.jumpy = random.randrange(5, self.max_jump_height)
-        self.jumpx = 100
-        self.jumpy = 100
+
+        # Calculation of current jump distance (x)
+        # Prevent over-movement
+        if abs(self.dydx[1]) > 15:
+            self.jump_x = random.randrange(5, self.max_move_distance) if self.dydx[1] > 0 else (
+                random.randrange(-1 * self.max_move_distance, -5)
+            )
+        else:
+            self.jump_x = self.dydx[1]
+
+        # Calculation of current jump distance (y)
+        if abs(self.dydx[0]) < 15:
+            self.jump_y = self.dydx[0]
+
+        else:
+
+            self.jump_y = random.randrange(7, self.max_jump_height) if self.dydx[0] > 0 else (
+                random.randrange(-1 * self.max_jump_height, -5)
+            )
+
+        print(f"jump: {self.jump_x}, jump_y: {self.jump_y}")
         self.start_location = self.screen_coords
 
     def update_jump(self, dt):
-        self.jump_timer += dt
+        self.timer += dt * 5
 
-        if self.jump_timer > self.jump_duration:
+        # Check if jump is completed
+        if self.timer > self.jump_duration:
             self.state = "idle"
-            # self.screen_coords = self.target_screen_coords
-            self.coords = self.target_coords
-            self.jump_timer = 0.0
+            self.calculate_coord_diff()
+            self.timer = 0.0
+            self.activity_timer = random.randrange(0,150) / 100 # How many seconds to wait till next jump
 
-        jump_progress = self.jump_timer / self.jump_duration
+            # If jump is near target, set to target
+            x_threshold = self.dydx[0] < 7 and self.dydx[0] > 0
+            y_threshold = self.dydx[1] < 7 and self.dydx[0] > 0
+            if x_threshold and y_threshold:
+                print("reached target")
+                self.screen_coords = self.target_screen_coords
+            self.coords = (self.screen_coords[0] // config.TILE_SIZE, self.screen_coords[1] // config.TILE_SIZE)
+            return
 
-        x = self.start_location[0] + self.jumpx * jump_progress
+        jump_progress = self.timer / self.jump_duration
 
-        arc_height = math.sin(jump_progress * math.pi) * abs(self.jumpy)
+        # X calculation during jump
+        x = self.start_location[0] + self.jump_x * jump_progress
 
-        linear_climb = abs(self.jumpy) * jump_progress
+        # Jumping movement
+        arc_height = math.sin(jump_progress * math.pi) * self.max_jump_height
 
-        y_change = -1 if self.jumpy < 0 else 1
+        # Height gained after jump
+        linear_climb = self.jump_y * jump_progress
 
-        y = self.start_location[1] + (linear_climb * y_change) - arc_height
+        y = self.start_location[1] + linear_climb - arc_height
 
         self.screen_coords = (x, y)
+
+    def calculate_coord_diff(self):
+        """Calculates difference in x and y coordinates from target"""
+        dy = self.target_screen_coords[1] - self.screen_coords[1]
+        dx = self.target_screen_coords[0] - self.screen_coords[0]
+        self.dydx = (dy, dx)
+        print(f"dy: {dy}, dx: {dx}")

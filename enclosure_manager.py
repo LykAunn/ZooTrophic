@@ -1,6 +1,7 @@
 import pygame
 import config
 from enclosure import Enclosure
+from animal import Animal
 
 class EnclosureManager:
     def __init__(self, screen):
@@ -27,6 +28,8 @@ class EnclosureManager:
         self.glow_surface = pygame.Surface((config.TILE_SIZE, config.TILE_SIZE))
         self.glow_surface.fill((249, 215, 126)) #((255, 255, 200))
 
+        self.animal = Animal(1, 1, 10, 10, "chicken", 'resources/chicken.png', screen)
+
         for y in range(0,3):
             for x in range(0,5):
                 self.fence_images.append(self.clip(self.fence, (x,y), 32,32))
@@ -49,6 +52,8 @@ class EnclosureManager:
         # Handle Drawing #
         if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None:
             self.selected_enclosure.add_tile(self.grid_x, self.grid_y)
+
+        self.animal.update(dt)
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -67,10 +72,14 @@ class EnclosureManager:
             if self.state == "SELECTED":
                self.finishDrawing()
 
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            if self.state == "SELECTED":
-                self.deselect_enclosure()
-                print("!!!!!!!!!!!DESELECT")
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                if self.state == "SELECTED":
+                    self.deselect_enclosure()
+
+            elif event.key == pygame.K_q:
+                self.animal.find_new_tile()
+
 
     def get_enclosure_at(self, x, y):
             for enclosure in self.enclosures:
@@ -110,10 +119,14 @@ class EnclosureManager:
         print("FINISH")
         if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
             if self.selected_enclosure.is_closed_loop():
-                print(self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()))
+                self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint())
                 print("YES---------------------------")
+                # --- Animal ---
+                self.animal.set_enclosure(self.selected_enclosure)
+                self.animal.set_animal_tile(self.selected_enclosure.get_random_tile())
+                self.animal.start_moving()
                 self.selected_enclosure.calculate_fences()
-                # self.selected_enclosure.set_state_to("FILLING")
+
                 self.deselect_enclosure()
                 self.state = "READY"
 
@@ -138,6 +151,8 @@ class EnclosureManager:
         for enclosure in self.enclosures:
             if enclosure.tileWithinEnclosure(x, y):
                 return enclosure.enclosure_id
+
+        return None
             
     def draw_enclosures(self, dt):
         for enclosure in self.enclosures:
@@ -177,6 +192,7 @@ class EnclosureManager:
                 self.screen.blit(self.glow_surface, (screenx, screeny))
 
             # if self.state == "SELECTED":
+            self.animal.draw()
 
-    def change_state(self, newState):
-        self.state = newState
+    def change_state(self, new_state):
+        self.state = new_state

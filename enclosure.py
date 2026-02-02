@@ -19,7 +19,7 @@ class Enclosure:
         self.target_glow = 0
 
     def tileWithinEnclosure(self, x, y):
-        return ((x,y) in self.fence_tiles or (x, y) in self.interior_tiles)
+        return (x, y) in self.fence_tiles or (x, y) in self.interior_tiles
     
     def add_tile(self, x, y):
         self.fence_tiles.add((x, y))
@@ -86,23 +86,23 @@ class Enclosure:
 
         return (x, y)
     
-    def recursive_check(self, location, visited):
-        if location in self.fence_tiles or location in visited:
-            return
-        
-        #TODO: Either check tile data for other enclosure that is within the enclosure or iterate through all the enclosures to check.
-
-        visited.append(location)
-
-        x, y = location
-
-        self.recursive_check((x + 1, y))
-        self.recursive_check((x - 1, y))
-        self.recursive_check((x, y + 1))
-        self.recursive_check((x, y - 1))
-
-    def check_for_overlap(self):
-        visited = set()
+    # def recursive_check(self, location, visited):
+    #     if location in self.fence_tiles or location in visited:
+    #         return
+    #
+    #     #TODO: Either check tile data for other enclosure that is within the enclosure or iterate through all the enclosures to check.
+    #
+    #     visited.append(location)
+    #
+    #     x, y = location
+    #
+    #     self.recursive_check((x + 1, y), visited)
+    #     self.recursive_check((x - 1, y), visited)
+    #     self.recursive_check((x, y + 1), visited)
+    #     self.recursive_check((x, y - 1), visited)
+    #
+    # def check_for_overlap(self):
+    #     visited = set()
 
         return self.recursive_check(self.get_midpoint(), visited)
 
@@ -232,3 +232,6 @@ class Enclosure:
 
     def set_state_to(self, state):
         self.state = state
+
+    def get_random_tile(self):
+        return next(iter(self.fill_queue))
