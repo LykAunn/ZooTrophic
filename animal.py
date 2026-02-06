@@ -4,7 +4,7 @@ import pygame
 import math
 
 class Animal:
-    def __init__(self, id, enclosure_id, x, y, species, image_path, screen, age = 0):
+    def __init__(self, id, enclosure_id, x, y, species, image_path_left, image_path_right, screen, age = 0):
         # Identity
         self.animal_id = id
         self.age = age
@@ -12,16 +12,18 @@ class Animal:
         self.sex = random.choice(["male", "female"])
         self.age_stage = "baby"
         self.name = None
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
+        self.image_left = pygame.image.load(image_path_left).convert_alpha()
+        self.image_left = pygame.transform.scale(self.image_left, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
+        self.image_right = pygame.image.load(image_path_right).convert_alpha()
+        self.image_right = pygame.transform.scale(self.image_right, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
         self.screen = screen
 
         # Enclosure
         self.enclosure_id = enclosure_id
-        self.enclosure = None # Reference for enclosure
-        self.home_zone = None
+        self.enclosure = None # Pointer to enclosure
+        self.home_zone = None #TODO Specific tile of the enclosure to be animals home
 
-        # Physical stats
+        # Physical stats TODO
         self.health = 100.0
         self.max_health  = 100.0
         self.hunger = 50.0 # 0 - 100, higher = more hungry
@@ -29,26 +31,25 @@ class Animal:
         self.energy = 100.0
         self.size = 1.0
 
-        #Psychological stats
+        #Psychological stats TODO
         self.happiness = 100
         self.stress = 0.0
         self.boredom = 0.0
         self.social_need = 50.0
 
-        # Behaviour state
+        # Behaviour state TODO
         self.state = "waiting"
-        self.activity_timer = 0.0
+        self.activity_timer = 0.0 # Time to next activity (jump, find new tile)
         self.last_fed = 0
         self.last_drank = 0
         self.last_slept = 0
 
         # Movement
-        self.time_till_next_move = 0.0
         self.timer = 0.0
         self.jump_duration = 0.0
         self.max_jump_height = 15
         self.max_move_distance = 25
-        self.jump_x = 0                   # Pixels to move in that current jump
+        self.jump_x = 0                   # Pixels to move in that jump
         self.jump_y = 0
         self.dydx = (0,0)
         self.start_location = (x, y)
@@ -58,7 +59,6 @@ class Animal:
         self.screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.target_coords = (x, y)
         self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
-        self.speed = 2.0
         self.direction = "south"
         self.find_new_tile()
 
@@ -73,7 +73,10 @@ class Animal:
         self.screen_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
 
     def draw(self):
-        self.screen.blit(self.image, self.screen_coords)
+        if self.direction == "left":
+            self.screen.blit(self.image_left, self.screen_coords)
+        else:
+            self.screen.blit(self.image_right, self.screen_coords)
 
     def update(self, dt):
         if self.state == "moving":
@@ -107,9 +110,14 @@ class Animal:
         # Calculation of current jump distance (x)
         # Prevent over-movement
         if abs(self.dydx[1]) > 15:
-            self.jump_x = random.randrange(5, self.max_move_distance) if self.dydx[1] > 0 else (
-                random.randrange(-1 * self.max_move_distance, -5)
-            )
+            if self.dydx[1] > 0:
+                jump = random.randrange(5, self.max_move_distance)
+                self.direction = "right"
+            else:
+                jump = random.randrange(-1 * self.max_move_distance, -5)
+                self.direction = "left"
+
+            self.jump_x =  jump
         else:
             self.jump_x = self.dydx[1]
 

@@ -11,9 +11,7 @@ class GameManager:
         self.menu_manager = MenuManager(screen, self)
         self.enclosure_manager = EnclosureManager(screen)
         self.game_clock = GameClock()
-        self.cursor = Cursor(screen, "resources/sand.png")
-        # self.animal = Animal(1, 1, 10,10,"chicken", 'resources/chicken.png', screen)
-        # self.animal.start_moving()
+        self.cursor = Cursor(screen, "resources/cursor.png")
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -23,7 +21,6 @@ class GameManager:
         self.enclosure_manager.update(grid_pos, dt)
         self.menu_manager.update(game_dt)
         self.cursor.update(grid_pos[0], grid_pos[1])
-        # self.animal.update(dt)
 
         if self.enclosure_manager.selected_enclosure:
             if not self.menu_manager.bottom_menu_visible:
@@ -38,7 +35,6 @@ class GameManager:
 
     def handle_event(self, event):
         # if self.menu_manager.handle_event(event):
-        #     return
         
         self.enclosure_manager.handle_event(event)
         self.menu_manager.bottom_panel.handle_event(event)
@@ -48,7 +44,6 @@ class GameManager:
         self.enclosure_manager.draw_enclosures(dt)
         self.cursor.draw_cursor()
         self.menu_manager.draw_menus()
-        # self.animal.draw()
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()

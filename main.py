@@ -37,9 +37,9 @@ while running:
 
     for y in range(0, int(config.SCREENHEIGHT), int(config.TILE_SIZE)):
         for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
-            color = "darkolivegreen2"
+            # color = "darkolivegreen2"
 
-            tile.left = x
+            # tile.left = x
             screen.blit(grass, (x, y))
             
         tile.top = y
@@ -50,6 +50,6 @@ while running:
     gameManager.update(dt, mousepos)
     gameManager.draw(dt)
 
-    screen.blit(chicken, (100, 100))
+    #screen.blit(chicken, (100, 100))
     
     pygame.display.flip()

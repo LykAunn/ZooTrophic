@@ -28,7 +28,7 @@ class EnclosureManager:
         self.glow_surface = pygame.Surface((config.TILE_SIZE, config.TILE_SIZE))
         self.glow_surface.fill((249, 215, 126)) #((255, 255, 200))
 
-        self.animal = Animal(1, 1, 10, 10, "chicken", 'resources/chicken.png', screen)
+        self.animal = Animal(1, 1, 10, 10, "chicken", 'resources/chicken.png', 'resources/Chicken_right.png', screen)
 
         for y in range(0,3):
             for x in range(0,5):
