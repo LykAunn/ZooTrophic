@@ -8,7 +8,7 @@ class Enclosure:
         self.interior_tiles = set()
         self.biome_type = "Grassland"
         self.color = (100, 200, 255)
-        self.animals = []
+        self.animals_id = []
         self.state = "READY"
         self.fill_queue = []
         self.fence_orientation = {}
@@ -235,3 +235,6 @@ class Enclosure:
 
     def get_random_tile(self):
         return next(iter(self.fill_queue))
+    
+    def add_animal_id(self, id):
+        self.animals_id.append(id)

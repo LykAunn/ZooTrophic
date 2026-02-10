@@ -11,6 +11,9 @@ class EnclosureManager:
         self.grid_y = 0
         self.screen = screen
         self.state = "READY"
+        self.able_to_change_state = True
+        self.able_to_select = True
+        self.fences_remaining = 100
 
         # Drawing #
         self.selected_enclosure = None
@@ -27,8 +30,6 @@ class EnclosureManager:
 
         self.glow_surface = pygame.Surface((config.TILE_SIZE, config.TILE_SIZE))
         self.glow_surface.fill((249, 215, 126)) #((255, 255, 200))
-
-        self.animal = Animal(1, 1, 10, 10, "chicken", 'resources/chicken.png', 'resources/Chicken_right.png', screen)
 
         for y in range(0,3):
             for x in range(0,5):
@@ -50,15 +51,15 @@ class EnclosureManager:
                 enclosure.update_hover(is_hovered, dt)
 
         # Handle Drawing #
-        if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None:
+        if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None and self.fences_remaining > 0:
             self.selected_enclosure.add_tile(self.grid_x, self.grid_y)
-
-        self.animal.update(dt)
+            self.fences_remaining -= 1
     
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state == "READY":
-                if self.select_enclosure() is not None:
+                # Select enclosure
+                if self.select_enclosure() is not None and self.able_to_select:
                     self.state = "SELECTED"
             elif self.selected_enclosure.state == "COMPLETE":
                 if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):
@@ -77,8 +78,8 @@ class EnclosureManager:
                 if self.state == "SELECTED":
                     self.deselect_enclosure()
 
-            elif event.key == pygame.K_q:
-                self.animal.find_new_tile()
+            # elif event.key == pygame.K_q:
+                # self.animal.find_new_tile()
 
 
     def get_enclosure_at(self, x, y):
@@ -94,12 +95,6 @@ class EnclosureManager:
             return None
         else:
             return 1
-
-        # if self.selected_enclosure is None:
-        #     self.selected_enclosure = Enclosure(self.next_id)
-        #     self.enclosures.add(self.selected_enclosure)
-        #     self.next_id += 1
-        #     print("NEW ENCLOSURE")
 
     def new_enclosure(self):
         self.selected_enclosure = Enclosure(self.next_id)
@@ -117,18 +112,16 @@ class EnclosureManager:
 
     def finishDrawing(self):
         print("FINISH")
-        if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
-            if self.selected_enclosure.is_closed_loop():
-                self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint())
-                print("YES---------------------------")
-                # --- Animal ---
-                self.animal.set_enclosure(self.selected_enclosure)
-                self.animal.set_animal_tile(self.selected_enclosure.get_random_tile())
-                self.animal.start_moving()
-                self.selected_enclosure.calculate_fences()
+        if self.fences_remaining > 0 :
+            if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
+                if self.selected_enclosure.is_closed_loop():
+                    self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint())
+                    print("YES---------------------------")
 
-                self.deselect_enclosure()
-                self.state = "READY"
+                    self.selected_enclosure.calculate_fences()
+
+                    self.deselect_enclosure()
+                    self.state = "READY"
 
         self.is_drawing = False
 
@@ -192,7 +185,6 @@ class EnclosureManager:
                 self.screen.blit(self.glow_surface, (screenx, screeny))
 
             # if self.state == "SELECTED":
-            self.animal.draw()
 
     def change_state(self, new_state):
         self.state = new_state

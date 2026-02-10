@@ -38,7 +38,7 @@ class Animal:
         self.social_need = 50.0
 
         # Behaviour state TODO
-        self.state = "waiting"
+        self.state = "HOVERING"
         self.activity_timer = 0.0 # Time to next activity (jump, find new tile)
         self.last_fed = 0
         self.last_drank = 0
@@ -60,7 +60,6 @@ class Animal:
         self.target_coords = (x, y)
         self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.direction = "south"
-        self.find_new_tile()
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
@@ -69,6 +68,7 @@ class Animal:
         self.state = state
 
     def set_animal_tile(self, tile):
+        """Sets animals coordinates to input tile (x,y)"""
         self.coords = tile
         self.screen_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
 
@@ -78,11 +78,11 @@ class Animal:
         else:
             self.screen.blit(self.image_right, self.screen_coords)
 
-    def update(self, dt):
-        if self.state == "moving":
+    def update(self, dt, mousepos):
+        if self.state == "MOVING":
             self.update_jump(dt)
 
-        elif self.state == "idle":
+        elif self.state == "IDLE":
             self.timer += dt
             if self.timer > self.activity_timer:
                 self.timer = 0.0
@@ -90,6 +90,10 @@ class Animal:
                     self.find_new_tile()
                 else:
                     self.start_moving()
+            
+        elif self.state == "HOVERING":
+            padding = config.TILE_SIZE // 2
+            self.screen_coords = (mousepos[0] - padding, mousepos[1] - padding)
 
 # --- Pathfinding ---
 
@@ -104,7 +108,7 @@ class Animal:
 
     def start_moving(self):
         """Initial calculation for jump"""
-        self.state = "moving"
+        self.state = "MOVING"
         self.jump_duration = random.randrange(1, 2)
 
         # Calculation of current jump distance (x)
@@ -139,15 +143,13 @@ class Animal:
 
         # Check if jump is completed
         if self.timer > self.jump_duration:
-            self.state = "idle"
+            self.state = "IDLE"
             self.calculate_coord_diff()
             self.timer = 0.0
             self.activity_timer = random.randrange(0,150) / 100 # How many seconds to wait till next jump
 
-            # If jump is near target, set to target
-            x_threshold = self.dydx[0] < 7 and self.dydx[0] > 0
-            y_threshold = self.dydx[1] < 7 and self.dydx[0] > 0
-            if x_threshold and y_threshold:
+            # Snap to target if close enough
+            if abs(self.dydx[0] < 7) and abs(self.dydx[1]) < 7:
                 print("reached target")
                 self.screen_coords = self.target_screen_coords
             self.coords = (self.screen_coords[0] // config.TILE_SIZE, self.screen_coords[1] // config.TILE_SIZE)
@@ -166,7 +168,7 @@ class Animal:
 
         y = self.start_location[1] + linear_climb - arc_height
 
-        self.screen_coords = (x, y)
+        self.screen_coords = (int(x), int(y))
 
     def calculate_coord_diff(self):
         """Calculates difference in x and y coordinates from target"""

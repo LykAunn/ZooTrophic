@@ -49,7 +49,5 @@ while running:
 
     gameManager.update(dt, mousepos)
     gameManager.draw(dt)
-
-    #screen.blit(chicken, (100, 100))
     
     pygame.display.flip()
