@@ -35,6 +35,8 @@ while running:
 
     tile = pygame.Rect(0, 0, config.TILE_SIZE, config.TILE_SIZE)
 
+    screen.fill((50, 50, 50))
+
     for y in range(0, int(config.SCREENHEIGHT), int(config.TILE_SIZE)):
         for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
             # color = "darkolivegreen2"

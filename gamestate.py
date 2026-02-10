@@ -3,8 +3,10 @@ from UI.menu_manager import MenuManager
 from game_clock import GameClock
 from cursor import Cursor
 from animal_manager import AnimalManager
+from UI.clock_menu import ClockMenu
 import config
 import pygame
+import pygame.gfxdraw
 
 class GameManager:
     def __init__(self, screen):
@@ -14,6 +16,7 @@ class GameManager:
         self.game_clock = GameClock()
         self.cursor = Cursor(screen, "resources/cursor.png")
         self.animal_manager = AnimalManager(screen)
+        self.clock_menu = ClockMenu(50,50,50)
         self.mouse_pos = (0,0)
 
     def update(self, dt, mouse_pos):
@@ -26,10 +29,17 @@ class GameManager:
         self.menu_manager.update(game_dt)
         self.cursor.update(grid_pos[0], grid_pos[1])
         self.animal_manager.update(dt, mouse_pos)
+        self.clock_menu.update(dt)
+        self.clock_menu.set_rotation(240)
 
         if self.enclosure_manager.state == "SELECTED":
             if not self.menu_manager.bottom_menu_visible:
                 self.menu_manager.show(self.enclosure_manager.selected_enclosure, 1)
+                self.menu_manager.hide(2)
+
+        elif self.animal_manager.state == "SELECTED":
+            if not self.menu_manager.bottom_menu_visible:
+                self.menu_manager.show(None, 1)
                 self.menu_manager.hide(2)
 
         else:
@@ -40,10 +50,14 @@ class GameManager:
     def handle_event(self, event):
         self.menu_manager.bottom_panel.handle_event(event)
         self.menu_manager.bottom_menu.handle_event(event)
+        self.animal_manager.handle_event(event)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_b:
                 self.animal_manager.create_new_animal()
+            elif event.key == pygame.K_ESCAPE:
+                if self.animal_manager.state == "HOVERING":
+                    self.animal_manager.cancel_placement()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.animal_manager.state == "HOVERING":
@@ -52,17 +66,20 @@ class GameManager:
                     self.animal_manager.start_animal(enclosure)
                 else:
                     print("Unable to find enclosure")
+                return # Stop processing the click
+            
+            # Only check for animal selection if not hovering
             animal = self.animal_manager.get_animal_at(self.mouse_pos)
-            if animal:
+            if animal is not None:
                 self.animal_manager.select_animal(animal)
                 self.enclosure_manager.able_to_select = False
                 print("SELECT ANIMAL")
                 # Give priority to animal. Select animal instead of enclosure
-            else:
-                self.enclosure_manager.able_to_select = True
-
-        self.enclosure_manager.handle_event(event)
-            
+                return
+                
+        # Only select enclosure if no animal was clicked
+        if self.animal_manager.state == "IDLE":
+            self.enclosure_manager.handle_event(event)
 
     def draw(self, dt):
         self.enclosure_manager.draw_enclosures(dt)
@@ -74,6 +91,10 @@ class GameManager:
             pygame.mouse.set_visible(False)
 
         self.menu_manager.draw_menus()
+        self.clock_menu.draw(self.screen)
+        pygame.gfxdraw.aacircle(self.screen, 500, 500, 50, (0,0,0))
+        pygame.gfxdraw.filled_circle(self.screen, 500,500,50,(0,0,0))
+        pygame.draw.circle(self.screen, (0,0,0), (1000, 500), 50, 0)
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()

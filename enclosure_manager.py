@@ -11,8 +11,6 @@ class EnclosureManager:
         self.grid_y = 0
         self.screen = screen
         self.state = "READY"
-        self.able_to_change_state = True
-        self.able_to_select = True
         self.fences_remaining = 100
 
         # Drawing #
@@ -59,7 +57,7 @@ class EnclosureManager:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state == "READY":
                 # Select enclosure
-                if self.select_enclosure() is not None and self.able_to_select:
+                if self.select_enclosure() is not None:
                     self.state = "SELECTED"
             elif self.selected_enclosure.state == "COMPLETE":
                 if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):

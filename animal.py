@@ -135,7 +135,7 @@ class Animal:
                 random.randrange(-1 * self.max_jump_height, -5)
             )
 
-        print(f"jump: {self.jump_x}, jump_y: {self.jump_y}")
+        #print(f"jump: {self.jump_x}, jump_y: {self.jump_y}")
         self.start_location = self.screen_coords
 
     def update_jump(self, dt):
@@ -175,4 +175,4 @@ class Animal:
         dy = self.target_screen_coords[1] - self.screen_coords[1]
         dx = self.target_screen_coords[0] - self.screen_coords[0]
         self.dydx = (dy, dx)
-        print(f"dy: {dy}, dx: {dx}")
+        #print(f"dy: {dy}, dx: {dx}")
