@@ -16,26 +16,27 @@ class GameClock:
 
         # Callbacks
         self.on_phase_change = []
+        self.on_hour_change = []
         self.on_new_day = []
 
         # Timekeeping for hour transition
         self.seconds_accumulated = 0
-        self.seconds_per_hour = config.seconds_per_hour
+        self.seconds_per_hour = 2#config.seconds_per_hour
 
         # Cached values
-        self.gamedt = 0
+        self.game_dt = 0 # In game dt (everything other than UI)
 
     def update(self, dt):
-        "Updates game clock and returns scaled dt for fast-forwarding"
+        """Updates game clock and returns scaled dt for fast-forwarding"""
         if self.paused:
-            self.gamedt = 0.0
+            self.game_dt = 0.0
             return 0.0
         
         # Scale time
         scaled_dt = dt * self.time_scale
-        self.gamedt = scaled_dt
+        self.game_dt = scaled_dt
 
-        # Acumulate time
+        # Accumulate time
         self.seconds_accumulated += scaled_dt
 
         while self.seconds_accumulated >= self.seconds_per_hour:
@@ -60,8 +61,9 @@ class GameClock:
             if self.skipping_night and self.phase == "dawn":
                 self.stop_skip_night()
 
-        # for callback in self.on_hour_change:
-        #     callback(self.time)
+        for callback in self.on_hour_change:
+            if callback:
+                callback()
 
     def increment_day(self):
         self.day += 1
@@ -95,8 +97,11 @@ class GameClock:
             return "night"
         
     def register_phase_listener(self, callback):
-        "To be called when day phase changes. Parameters: (old_phase, new_phase)"
+        """To be called when day phase changes. Parameters: (old_phase, new_phase)"""
         self.on_phase_change.append(callback)
+
+    def register_hour_listener(self, callback):
+        self.on_hour_change.append(callback)
 
     def _notify_phase_change(self, old_phase, new_phase):
         for callback in self.on_phase_change:
@@ -129,15 +134,15 @@ class GameClock:
         return self.phase
     
     def get_formatted_time(self):
-        "Return in format hh:00 AM/PM"
+        """Return in format hh:00 AM/PM"""
         hour = int(self.time)
         display_hour = hour % 12
         if display_hour == 0:
             display_hour = 12
 
-        period = "AM" if hour < 12 else "PM"
+        period = "am" if hour < 12 else "pm"
 
         return f"{display_hour}:00 {period}"
     
     def get_formatted_date(self):
-        return f"Day {self.day}, Month{self.month}, Year{self.year}"
+        return f"Day {self.day}, Month {self.month}, Year {self.year}"

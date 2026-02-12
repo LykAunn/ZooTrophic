@@ -16,8 +16,9 @@ class GameManager:
         self.game_clock = GameClock()
         self.cursor = Cursor(screen, "resources/cursor.png")
         self.animal_manager = AnimalManager(screen)
-        self.clock_menu = ClockMenu(50,50,50)
+        self.clock_menu = ClockMenu(50,50,50, self.game_clock)
         self.mouse_pos = (0,0)
+        self.game_clock.register_hour_listener(self.clock_menu.increment_hour)
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -30,7 +31,7 @@ class GameManager:
         self.cursor.update(grid_pos[0], grid_pos[1])
         self.animal_manager.update(dt, mouse_pos)
         self.clock_menu.update(dt)
-        self.clock_menu.set_rotation(240)
+        # self.clock_menu.set_rotation(240)
 
         if self.enclosure_manager.state == "SELECTED":
             if not self.menu_manager.bottom_menu_visible:
@@ -58,6 +59,11 @@ class GameManager:
             elif event.key == pygame.K_ESCAPE:
                 if self.animal_manager.state == "HOVERING":
                     self.animal_manager.cancel_placement()
+            elif event.key == pygame.K_1:
+                if not self.game_clock.paused:
+                    self.game_clock.pause()
+                else:
+                    self.game_clock.unpause()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.animal_manager.state == "HOVERING":
