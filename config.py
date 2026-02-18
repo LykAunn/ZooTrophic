@@ -4,9 +4,10 @@ SCREENHEIGHT = 720
 FPS = 60
 
 # TILE SETTINGS #
-noOfTiles = 40
-TILE_SIZE = SCREENWIDTH / noOfTiles
-pixel_size = 2
+noOfTiles_x = 40
+TILE_SIZE = SCREENWIDTH // noOfTiles_x
+noOfTiles_y = SCREENHEIGHT // TILE_SIZE
+pixel_size = TILE_SIZE // 16
 
 # ANIMATION #
 fill_speed = 3

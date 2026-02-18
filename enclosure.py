@@ -1,8 +1,9 @@
 import config
 import math
+from tile_index import TileIndex
 
 class Enclosure:
-    def __init__(self, enclosure_id):
+    def __init__(self, enclosure_id, tile_index):
         self.enclosure_id = enclosure_id
         self.fence_tiles = set() # set of (x,y) tuples of the coordinates of the fence tiles
         self.interior_tiles = set()
@@ -12,6 +13,7 @@ class Enclosure:
         self.state = "READY"
         self.fill_queue = []
         self.fence_orientation = {}
+        self.tile_index = tile_index # Pointer to tile_index class
 
         # GLOW #
         self.glow_timer = 0
@@ -23,6 +25,7 @@ class Enclosure:
     
     def add_tile(self, x, y):
         self.fence_tiles.add((x, y))
+        self.tile_index.register_tile(x, y, "fence", self.enclosure_id)
 
     def get_adjacent_fence_tiles(self, x, y):
         adjacent_tiles = ((x - 1, y) , (x + 1, y) , (x, y + 1) , (x, y - 1), (x + 1, y+ 1), (x + 1, y - 1), (x - 1, y+ 1), (x -1, y -1))
@@ -143,9 +146,13 @@ class Enclosure:
                 if not self.fill_queue:
                     break
 
-                coords = self.fill_queue.pop(0)
+                (x,y) = self.fill_queue.pop(0)
 
-                self.interior_tiles.add(coords)
+                self.add_interior_tile(x,y)
+
+    def add_interior_tile(self,x, y):
+        self.interior_tiles.add((x,y))
+        self.tile_index.register_tile(x, y, "interior", self.enclosure_id)
 
     def update_glow(self, dt):
         self.glow_timer += dt

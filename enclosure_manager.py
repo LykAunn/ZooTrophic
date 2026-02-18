@@ -4,8 +4,9 @@ from enclosure import Enclosure
 from animal import Animal
 
 class EnclosureManager:
-    def __init__(self, screen):
+    def __init__(self, screen, tile_index):
         self.enclosures = set()
+        self.tile_index = tile_index
         self.next_id = 0
         self.grid_x = 0
         self.grid_y = 0
@@ -95,7 +96,7 @@ class EnclosureManager:
             return 1
 
     def new_enclosure(self):
-        self.selected_enclosure = Enclosure(self.next_id)
+        self.selected_enclosure = Enclosure(self.next_id, self.tile_index)
         self.enclosures.add(self.selected_enclosure)
         self.next_id += 1
         print("NEW ENCLOSURE")
@@ -145,21 +146,35 @@ class EnclosureManager:
 
         return None
             
-    def draw_enclosures(self, dt):
-        for enclosure in self.enclosures:
-            # Draw fence tiles
-            for tile in enclosure.fence_tiles:
-                screenx, screeny = tile
-                screenx = screenx * config.TILE_SIZE
-                screeny = screeny * config.TILE_SIZE
+    def draw_enclosures(self, dt, tiles, start_x, start_y):
+        camera_offset_x = start_x * config.TILE_SIZE
+        camera_offset_y = start_y * config.TILE_SIZE
 
-                # if(enclosure.enclosure_id == 0):
-                image_index = enclosure.fence_orientation.get(tile)
-                if image_index is None:
-                    image_index = 1
+        # FIRST PASS
 
-                
+        for (tile_x, tile_y), (tile_type, enclosure_id) in tiles.items():
+            screenx = tile_x * config.TILE_SIZE - camera_offset_x
+            screeny = tile_y * config.TILE_SIZE - camera_offset_y
+
+            enclosure = self.get_enclosure_by_id(enclosure_id)
+
+            if tile_type == "fence":
+                # Get fence orientation from enclosure
+                image_index = enclosure.fence_orientation.get((tile_x, tile_y), 1)
                 self.screen.blit(self.fence_images[image_index], (screenx, screeny))
+
+            elif tile_type == "interior":
+                self.screen.blit(self.sand, (screenx, screeny))
+
+                # Glow effect
+                self.glow_surface.set_alpha(int(enclosure.glow_intensity * 128))
+                self.screen.blit(self.glow_surface, (screenx, screeny))
+
+        # SECOND PASS
+
+        visible_enclosure_ids = {data[1] for data in tiles.values()}
+        for enclosure_id in visible_enclosure_ids:
+            enclosure = self.get_enclosure_by_id(enclosure_id)
 
             # Handle glow animation
             if enclosure.state == "FILLING":
@@ -168,21 +183,46 @@ class EnclosureManager:
             elif enclosure.state == "GLOWING":
                 enclosure.update_glow(dt)
 
-            # Draw interior tiles
-            for tile in enclosure.interior_tiles:
-                screenx, screeny = tile
-                screenx = screenx * config.TILE_SIZE
-                screeny = screeny * config.TILE_SIZE
 
-                self.screen.blit(self.sand, (screenx, screeny))
+        # for enclosure in self.enclosures:
+        #     # Draw fence tiles
+        #     for tile in enclosure.fence_tiles:
+        #         screenx, screeny = tile
+        #         screenx = screenx * config.TILE_SIZE
+        #         screeny = screeny * config.TILE_SIZE
 
-                # Draw glow effect
-                # if (enclosure.state == "GLOWING"):
-                self.glow_surface.set_alpha(int(enclosure.glow_intensity * 128))
+        #         # if(enclosure.enclosure_id == 0):
+        #         image_index = enclosure.fence_orientation.get(tile)
+        #         if image_index is None:
+        #             image_index = 1
 
-                self.screen.blit(self.glow_surface, (screenx, screeny))
+                
+        #         self.screen.blit(self.fence_images[image_index], (screenx, screeny))
 
-            # if self.state == "SELECTED":
+        #     # Handle glow animation
+        #     if enclosure.state == "FILLING":
+        #         enclosure.update_animation()
+
+        #     elif enclosure.state == "GLOWING":
+        #         enclosure.update_glow(dt)
+
+        #     # Draw interior tiles
+        #     for tile in enclosure.interior_tiles:
+        #         screenx, screeny = tile
+        #         screenx = screenx * config.TILE_SIZE
+        #         screeny = screeny * config.TILE_SIZE
+
+        #         self.screen.blit(self.sand, (screenx, screeny))
+
+        #         # Draw glow effect
+        #         self.glow_surface.set_alpha(int(enclosure.glow_intensity * 128))
+        #         self.screen.blit(self.glow_surface, (screenx, screeny))
 
     def change_state(self, new_state):
         self.state = new_state
+
+    def get_enclosure_by_id(self, id):
+        for enclosure in self.enclosures:
+            if enclosure.enclosure_id == id:
+                return enclosure
+        return None

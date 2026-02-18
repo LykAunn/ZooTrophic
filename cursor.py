@@ -5,7 +5,7 @@ class Cursor:
     def __init__(self, screen, image_path):
         self.screen = screen
         self.tilesize = config.TILE_SIZE
-        self.max_tile = config.noOfTiles
+        self.max_tile = config.noOfTiles_x
         self.x_coord = 0
         self.y_coord = 0
         self.cursor_image = pygame.image.load(image_path).convert_alpha()

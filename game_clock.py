@@ -142,7 +142,7 @@ class GameClock:
 
         period = "am" if hour < 12 else "pm"
 
-        return f"{display_hour}:00 {period}"
+        return f"{display_hour}:00{period}"
     
     def get_formatted_date(self):
         return f"Day {self.day}, Month {self.month}, Year {self.year}"

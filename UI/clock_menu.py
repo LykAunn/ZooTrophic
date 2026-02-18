@@ -1,17 +1,14 @@
 import pygame
-import pygame.gfxdraw
 import config
 
 class ClockMenu:
     def __init__(self, x, y, radius, game_clock):
-        self.x = x
-        self.y = y
         self.radius = radius
         self.clock_image = pygame.image.load('resources/day_night_dial.png').convert_alpha()
         self.clock_image = pygame.transform.scale(self.clock_image, (int(config.TILE_SIZE) * 2.5, int(config.TILE_SIZE) * 2.5))
         self.hanging_sign_image = pygame.image.load('resources/Hanging_Sign.png').convert_alpha()
-        self.hanging_sign_image = pygame.transform.scale(self.hanging_sign_image, (int(config.TILE_SIZE) * 3, int(config.TILE_SIZE) * 3))
-        self.hanging_sign_location = (0,0)
+        self.hanging_sign_image = pygame.transform.scale(self.hanging_sign_image, (int(config.TILE_SIZE) * 4, int(config.TILE_SIZE) * 4))
+        self.hanging_sign_location = (config.TILE_SIZE // 4,0) #(x, y)qhw
         self.arrow_image = None
         self.game_clock = game_clock
 
@@ -19,8 +16,9 @@ class ClockMenu:
         self.current_rotation = 0
         self.target_rotation = 0
         self.clock_counter = 0
-        self.clock_location = (54,12)
         self.mask_size = int(config.TILE_SIZE) * 2.5
+        self.clock_location = (self.hanging_sign_location[0] + (config.pixel_size * 48) - self.mask_size // 2,
+                               self.hanging_sign_location[1] + config.pixel_size * 28 - self.mask_size // 2)
         self.mask = pygame.Surface((self.mask_size, self.mask_size), pygame.SRCALPHA) #SRCALPHA = Transparent
         pygame.draw.circle(self.mask, (255, 255, 255, 255), (self.mask_size // 2, self.mask_size // 2), self.mask_size // 2)
         # Draw white circle on transparent background
@@ -29,17 +27,20 @@ class ClockMenu:
         self.time_text = "None"
         self.date_text = "None"
         try: # Try to load font
-            self.font = pygame.font.Font('resources/font.ttf', 24)
+            self.font = pygame.font.Font('resources/font.ttf', 20)
         except FileNotFoundError:
             print("Font not found, using default.")
-            self.font = pygame.font.Font(None, 24)
+            self.font = pygame.font.Font(None, 20)
 
         self.time_surf = self.font.render("None", True, (0, 0, 0))
+        self.time_location = (self.hanging_sign_location[0] + (config.pixel_size * 8),
+                              self.hanging_sign_location[1] + (config.pixel_size * 10))
         self.date_surf = self.font.render("None", True, (0, 0, 0))
+        self.date_location = ()
 
     def draw(self, screen):
-        pygame.gfxdraw.aacircle(screen, 500, 500, 50, (0,0,0))
-        pygame.gfxdraw.filled_circle(screen, 500,500,50,(0,0,0))
+        # pygame.gfxdraw.aacircle(screen, 500, 500, 50, (0,0,0))
+        # pygame.gfxdraw.filled_circle(screen, 500,500,50,(0,0,0))
         rotated_clock = pygame.transform.rotate(self.clock_image, self.current_rotation)
 
         temp_surface = pygame.Surface((self.mask_size, self.mask_size), pygame.SRCALPHA)
@@ -53,10 +54,10 @@ class ClockMenu:
         screen.blit(self.hanging_sign_image, self.hanging_sign_location)
 
         # Time display
-        screen.blit(self.time_surf, (self.x - 30, self.y))
+        screen.blit(self.time_surf, self.time_location)
 
         # Date display
-        screen.blit(self.date_surf, (self.x - 30, self.y + 100))
+        #screen.blit(self.date_surf, (self.x - 30, self.y + 100))
 
     def update(self, dt):
         self.clock_counter += dt
