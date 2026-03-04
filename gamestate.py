@@ -10,6 +10,7 @@ from tile_index import TileIndex
 import config
 import pygame
 import pygame.gfxdraw
+from decimal import Decimal
 
 class GameManager:
     def __init__(self, screen):
@@ -42,16 +43,17 @@ class GameManager:
         self.player.update(dt)
         self.player_coords = self.player.get_position()
 
-        # Camera calculation
+        # Camera calculation (Integer for logic, float for movement)
         self.top_left_player_coords = self.player_coords[0] - self.boundary_x, self.player_coords[1] - self.boundary_y
+        world_grid_pos = self.screen_to_world_tile(mouse_pos)
 
         # Game logic
-        self.enclosure_manager.update(grid_pos, dt)
+        self.enclosure_manager.update(world_grid_pos, dt)
         self.menu_manager.update(game_dt)
         self.animal_manager.update(dt, mouse_pos)
 
         # UI
-        self.cursor.update(grid_pos[0], grid_pos[1])
+        self.cursor.update(mouse_pos, self.top_left_player_coords)
         self.clock_menu.update(dt)
 
         if self.enclosure_manager.state == "SELECTED":
@@ -136,6 +138,21 @@ class GameManager:
         self.menu_manager.draw_menus()
         self.clock_menu.draw(self.screen)
 
+    def screen_to_world_tile(self, mouse_pos):
+        """Convert screen mouse position to world tile coordinates."""
+        # Fractional camera offset in pixels
+        offset_x = (self.top_left_player_coords[0] % 1) * config.TILE_SIZE
+        offset_y = (self.top_left_player_coords[1] % 1) * config.TILE_SIZE
+
+        # Which screen tile is under the mouse (accounting for visual offset)
+        screen_tile_x = (mouse_pos[0] + offset_x) // config.TILE_SIZE
+        screen_tile_y = (mouse_pos[1] + offset_y) // config.TILE_SIZE
+
+        # Convert to world tile
+        world_tile_x = int(screen_tile_x + self.top_left_player_coords[0])
+        world_tile_y = int(screen_tile_y + self.top_left_player_coords[1])
+
+        return (world_tile_x, world_tile_y)
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()

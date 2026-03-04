@@ -31,4 +31,4 @@ class Player:
     #             self.open_inventory()
     
     def get_position(self):
-        return (self.world_x, self.world_y)
+        return self.world_x, self.world_y
