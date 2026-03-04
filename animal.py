@@ -72,11 +72,18 @@ class Animal:
         self.coords = tile
         self.screen_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
 
-    def draw(self):
+    def draw(self, camera_offset):
+        offsetScreenX = self.screen_coords[0]
+        offsetScreenY = self.screen_coords[1]
+
+        if self.state != "HOVERING":
+            offsetScreenX -= camera_offset[0] * config.TILE_SIZE
+            offsetScreenY -= camera_offset[1] * config.TILE_SIZE
+
         if self.direction == "left":
-            self.screen.blit(self.image_left, self.screen_coords)
+            self.screen.blit(self.image_left, (offsetScreenX, offsetScreenY))
         else:
-            self.screen.blit(self.image_right, self.screen_coords)
+            self.screen.blit(self.image_right, (offsetScreenX, offsetScreenY))
 
     def update(self, dt, mousepos):
         if self.state == "MOVING":

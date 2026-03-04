@@ -10,13 +10,13 @@ class AnimalManager:
         self.selected_animal = None
         self.state = "IDLE"
 
-    def draw(self):
+    def draw(self, camera_offset):
         if self.animal_set:
             for animal in self.animal_set:
-                animal.draw()
+                animal.draw(camera_offset)
 
         if self.state == "HOVERING" and self.selected_animal is not None:
-            self.selected_animal.draw()
+            self.selected_animal.draw(camera_offset)
 
     def update(self, dt, mousepos):
         if self.animal_set:

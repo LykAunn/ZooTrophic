@@ -11,8 +11,8 @@ dt = 0
 
 gameManager = GameManager(screen)
 
-grass = pygame.image.load('resources/grass4.png').convert()
-grass = pygame.transform.scale(grass, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
+# grass = pygame.image.load('resources/grass4.png').convert()
+# grass = pygame.transform.scale(grass, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
 
 chicken = pygame.image.load('resources/chicken.png').convert_alpha()
 chicken = pygame.transform.scale(chicken, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
@@ -37,15 +37,15 @@ while running:
 
     screen.fill((50, 50, 50))
 
-    for y in range(0, int(config.SCREENHEIGHT), int(config.TILE_SIZE)):
-        for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
-            # color = "darkolivegreen2"
-
-            # tile.left = x
-            screen.blit(grass, (x, y))
-            
-        tile.top = y
-        tile.left = 0
+    # for y in range(0, int(config.SCREENHEIGHT), int(config.TILE_SIZE)):
+    #     for x in range(0, int(config.SCREENWIDTH), int(config.TILE_SIZE)):
+    #         # color = "darkolivegreen2"
+    #
+    #         # tile.left = x
+    #         # screen.blit(grass, (x, y))
+    #
+    #     tile.top = y
+    #     tile.left = 0
 
     mousepos = pygame.mouse.get_pos()
 

@@ -3,12 +3,13 @@ import config
 
 class ClockMenu:
     def __init__(self, x, y, radius, game_clock):
+        self.menu_scale = 4
         self.radius = radius
         self.clock_image = pygame.image.load('resources/day_night_dial.png').convert_alpha()
         self.clock_image = pygame.transform.scale(self.clock_image, (int(config.TILE_SIZE) * 2.5, int(config.TILE_SIZE) * 2.5))
         self.hanging_sign_image = pygame.image.load('resources/Hanging_Sign.png').convert_alpha()
-        self.hanging_sign_image = pygame.transform.scale(self.hanging_sign_image, (int(config.TILE_SIZE) * 4, int(config.TILE_SIZE) * 4))
-        self.hanging_sign_location = (config.TILE_SIZE // 4,0) #(x, y)qhw
+        self.hanging_sign_image = pygame.transform.scale(self.hanging_sign_image, (int(config.TILE_SIZE) * self.menu_scale, int(config.TILE_SIZE) * self.menu_scale))
+        self.hanging_sign_location = (config.TILE_SIZE // 4,0) #(x, y)
         self.arrow_image = None
         self.game_clock = game_clock
 

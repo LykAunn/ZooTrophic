@@ -5,6 +5,7 @@ from cursor import Cursor
 from animal_manager import AnimalManager
 from UI.clock_menu import ClockMenu
 from player import Player
+from terrain import TerrainRenderer
 from tile_index import TileIndex
 import config
 import pygame
@@ -15,6 +16,9 @@ class GameManager:
         self.screen = screen
         self.mouse_pos = (0,0)
         self.player_coords = (0,0)
+        self.top_left_player_coords = (0,0)
+        self.boundary_x = config.noOfTiles_x // 2
+        self.boundary_y = config.noOfTiles_y // 2
 
         # Class References
         self.tile_index = TileIndex()
@@ -25,8 +29,8 @@ class GameManager:
         self.animal_manager = AnimalManager(screen)
         self.clock_menu = ClockMenu(50,50,50, self.game_clock)
         self.player = Player()
-
         self.game_clock.register_hour_listener(self.clock_menu.increment_hour)
+        self.terrain_generator = TerrainRenderer(self.screen)
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -37,6 +41,9 @@ class GameManager:
         # Player
         self.player.update(dt)
         self.player_coords = self.player.get_position()
+
+        # Camera calculation
+        self.top_left_player_coords = self.player_coords[0] - self.boundary_x, self.player_coords[1] - self.boundary_y
 
         # Game logic
         self.enclosure_manager.update(grid_pos, dt)
@@ -103,24 +110,32 @@ class GameManager:
 
     def draw(self, dt):
         # Bounds calculation
-        boundary_x = config.noOfTiles_x // 2
-        boundary_y = config.noOfTiles_y // 2
-        tiles = self.tile_index.get_tiles_in_range(self.player_coords[0] - boundary_x - 1, self.player_coords[1] - boundary_y,
-                                                self.player_coords[0] + boundary_x, self.player_coords[1] + boundary_y)
+        tiles = self.tile_index.get_tiles_in_range(self.player_coords[0] - self.boundary_x - 1, self.player_coords[1] - self.boundary_y,
+                                                self.player_coords[0] + self.boundary_x, self.player_coords[1] + self.boundary_y)
 
-        self.enclosure_manager.draw_enclosures(dt, tiles, self.player_coords[0] - boundary_x, self.player_coords[1] - boundary_y)
-        self.animal_manager.draw()
+        end_x = self.top_left_player_coords[0] + config.noOfTiles_x + 1
+        end_y = self.top_left_player_coords[1] + config.noOfTiles_y + 1
+
+        # Terrain
+        self.terrain_generator.draw(self.top_left_player_coords, end_x, end_y)
+
+        # Enclosure Tiles
+        self.enclosure_manager.draw_enclosures(dt, tiles, self.top_left_player_coords[0], self.top_left_player_coords[1])
+
+        # Animals
+        self.animal_manager.draw(self.top_left_player_coords)
+
+        # Cursor
         if self.animal_manager.state != "HOVERING":
             pygame.mouse.set_visible(True)
             self.cursor.draw_cursor()
         else:
             pygame.mouse.set_visible(False)
 
+        # UI
         self.menu_manager.draw_menus()
         self.clock_menu.draw(self.screen)
-        # pygame.gfxdraw.aacircle(self.screen, 500, 500, 50, (0,0,0))
-        # pygame.gfxdraw.filled_circle(self.screen, 500,500,50,(0,0,0))
-        # pygame.draw.circle(self.screen, (0,0,0), (1000, 500), 50, 0)
+
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()
