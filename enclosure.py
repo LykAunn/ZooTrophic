@@ -119,8 +119,8 @@ class Enclosure:
         while queue:
             current = queue.pop(0)
 
-            if x < 0 or y < 0 or x >= 40 or y >= 40:
-                continue
+            # if x < 0 or y < 0 or x >= 40 or y >= 40:
+            #     continue
 
             # If hit a wall or other filled tiles
             if current in visited or current in self.fence_tiles:

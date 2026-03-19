@@ -49,10 +49,9 @@ class AnimalManager:
 
         self.selected_animal.set_enclosure(enclosure)
 
-    def start_animal(self, enclosure):
+    def start_animal(self, enclosure, world_pos):
         self.assign_enclosure(enclosure)
-        coords = tuple(c // config.TILE_SIZE for c in self.selected_animal.screen_coords)
-        self.selected_animal.set_animal_tile(coords)
+        self.selected_animal.set_animal_tile(world_pos)
         self.selected_animal.find_new_tile()
         self.selected_animal.start_moving()
 

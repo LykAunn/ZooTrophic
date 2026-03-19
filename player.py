@@ -5,7 +5,7 @@ class Player:
     def __init__(self):
         self.world_x = 20
         self.world_y = 11
-        self.speed = config.fill_speed
+        self.speed = config.player_speed
 
     def update(self, dt):
         keys = pygame.key.get_pressed()

@@ -16,3 +16,6 @@ menu_movement_speed = 6
 
 # TIME SETTINGS #
 seconds_per_hour = 10
+
+# Player #
+player_speed = 5

@@ -1,3 +1,4 @@
+from camera import Camera
 from enclosure_manager import EnclosureManager
 from UI.menu_manager import MenuManager
 from game_clock import GameClock
@@ -18,6 +19,7 @@ class GameManager:
         self.mouse_pos = (0,0)
         self.player_coords = (0,0)
         self.top_left_player_coords = (0,0)
+        self.world_mouse_pos = (0,0)
         self.boundary_x = config.noOfTiles_x // 2
         self.boundary_y = config.noOfTiles_y // 2
 
@@ -32,6 +34,7 @@ class GameManager:
         self.player = Player()
         self.game_clock.register_hour_listener(self.clock_menu.increment_hour)
         self.terrain_generator = TerrainRenderer(self.screen)
+        self.camera = Camera()
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -45,10 +48,10 @@ class GameManager:
 
         # Camera calculation (Integer for logic, float for movement)
         self.top_left_player_coords = self.player_coords[0] - self.boundary_x, self.player_coords[1] - self.boundary_y
-        world_grid_pos = self.screen_to_world_tile(mouse_pos)
+        self.world_mouse_pos = self.camera.screen_to_world_tile(mouse_pos, self.top_left_player_coords)
 
         # Game logic
-        self.enclosure_manager.update(world_grid_pos, dt)
+        self.enclosure_manager.update(self.world_mouse_pos, dt)
         self.menu_manager.update(game_dt)
         self.animal_manager.update(dt, mouse_pos)
 
@@ -90,9 +93,9 @@ class GameManager:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.animal_manager.state == "HOVERING":
-                enclosure = self.enclosure_manager.get_enclosure_at(self.mouse_pos[0] // config.TILE_SIZE, self.mouse_pos[1] // config.TILE_SIZE)
+                enclosure = self.enclosure_manager.get_enclosure_at(self.world_mouse_pos[0], self.world_mouse_pos[1])
                 if enclosure is not None:
-                    self.animal_manager.start_animal(enclosure)
+                    self.animal_manager.start_animal(enclosure, self.world_mouse_pos)
                 else:
                     print("Unable to find enclosure")
                 return # Stop processing the click
@@ -137,22 +140,6 @@ class GameManager:
         # UI
         self.menu_manager.draw_menus()
         self.clock_menu.draw(self.screen)
-
-    def screen_to_world_tile(self, mouse_pos):
-        """Convert screen mouse position to world tile coordinates."""
-        # Fractional camera offset in pixels
-        offset_x = (self.top_left_player_coords[0] % 1) * config.TILE_SIZE
-        offset_y = (self.top_left_player_coords[1] % 1) * config.TILE_SIZE
-
-        # Which screen tile is under the mouse (accounting for visual offset)
-        screen_tile_x = (mouse_pos[0] + offset_x) // config.TILE_SIZE
-        screen_tile_y = (mouse_pos[1] + offset_y) // config.TILE_SIZE
-
-        # Convert to world tile
-        world_tile_x = int(screen_tile_x + self.top_left_player_coords[0])
-        world_tile_y = int(screen_tile_y + self.top_left_player_coords[1])
-
-        return (world_tile_x, world_tile_y)
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()
