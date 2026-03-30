@@ -8,7 +8,7 @@ class MenuManager:
         self.game_manager = game_manager
         self.bottom_panel = BottomPanel(screen, game_manager)
         self.top_panel = TopPanel(screen)
-        self.bottom_menu = BottomMenu(screen, 80, game_manager)
+        self.bottom_menu = BottomMenu(screen, 70, game_manager)
         self.selected_enclosure = None
         self.top_visible = True
         self.bottom_menu_visible = False

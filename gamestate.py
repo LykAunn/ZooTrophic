@@ -115,8 +115,8 @@ class GameManager:
 
     def draw(self, dt):
         # Bounds calculation
-        tiles = self.tile_index.get_tiles_in_range(self.player_coords[0] - self.boundary_x - 1, self.player_coords[1] - self.boundary_y,
-                                                self.player_coords[0] + self.boundary_x, self.player_coords[1] + self.boundary_y)
+        tiles = self.tile_index.get_tiles_in_range(self.player_coords[0] - self.boundary_x - 1, self.player_coords[1] - self.boundary_y -1,
+                                                self.player_coords[0] + self.boundary_x + 1, self.player_coords[1] + self.boundary_y + 1)
 
         end_x = self.top_left_player_coords[0] + config.noOfTiles_x + 1
         end_y = self.top_left_player_coords[1] + config.noOfTiles_y + 1

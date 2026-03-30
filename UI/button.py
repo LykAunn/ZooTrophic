@@ -22,6 +22,12 @@ class Button:
         self.default_x = default_x
         self.default_y = default_y
 
+        try: # Try to load font
+            self.font = pygame.font.Font('resources/font.ttf', 20)
+        except FileNotFoundError:
+            print("Font not found, using default.")
+            self.font = pygame.font.Font(None, 20)
+
     def handle_event(self, event):
         if self.visible is True:
             if event.type == pygame.MOUSEMOTION:
@@ -60,8 +66,7 @@ class Button:
 
         pygame.draw.rect(surface, self.border_color, self.rect , self.border_width)
 
-        font = pygame.font.Font(None, 24)
-        text_surf = font.render(self.text, True, self.text_color)
+        text_surf = self.font.render(self.text, True, self.text_color)
         text_rect = text_surf.get_rect(center=self.rect.center)
         surface.blit(text_surf, text_rect)
 

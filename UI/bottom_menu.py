@@ -9,9 +9,9 @@ class BottomMenu(Menu):
         super().__init__(screen, config.SCREENHEIGHT, True, height, config.SCREENHEIGHT, game_manager)
 
         self.menu_image = pygame.image.load("resources/Bottom_Menu.png").convert_alpha()
-        self.menu_image = pygame.transform.scale_by(self.menu_image, config.pixel_size)
+        self.menu_image = pygame.transform.scale_by(self.menu_image, config.pixel_size);
 
-        self.state = 0 # 0 = Main , 1 = Contruct
+        self.state = 0 # 0 = Main , 1 = Construct
         self.x = (config.SCREENWIDTH / 2) - (self.menu_image.get_width() / 2)
 
         self.button_set1_config = [("Construct", self.on_construct_clicked), ("Market", game_manager.on_build_clicked),
