@@ -59,7 +59,7 @@ class Button:
     def draw(self, surface):
         if self.current_y >= config.SCREENHEIGHT:
             return
-        
+
         color = self.hover_color if self.hovered else self.bg_color
 
         pygame.draw.rect(surface, color, self.rect)

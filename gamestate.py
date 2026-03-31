@@ -52,8 +52,8 @@ class GameManager:
 
         # Game logic
         self.enclosure_manager.update(self.world_mouse_pos, dt)
-        self.menu_manager.update(game_dt)
-        self.animal_manager.update(dt, mouse_pos)
+        self.menu_manager.update(dt)
+        self.animal_manager.update(game_dt, mouse_pos)
 
         # UI
         self.cursor.update(mouse_pos, self.top_left_player_coords)
@@ -78,6 +78,7 @@ class GameManager:
         self.menu_manager.bottom_panel.handle_event(event)
         self.menu_manager.bottom_menu.handle_event(event)
         self.animal_manager.handle_event(event)
+        self.clock_menu.handle_event(event)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_b:
