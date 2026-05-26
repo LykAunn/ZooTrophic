@@ -1,6 +1,6 @@
 import config
 import math
-from tile_index import TileIndex
+
 
 class Enclosure:
     def __init__(self, enclosure_id, tile_index):
@@ -14,13 +14,15 @@ class Enclosure:
         self.fill_queue = []
         self.fence_orientation = {}
         self.tile_index = tile_index # Pointer to tile_index class
+        self.enclosure_size = 0
+        self.animals_in_enclosure = 0
 
         # GLOW #
         self.glow_timer = 0
         self.glow_intensity = 0
         self.target_glow = 0
 
-    def tileWithinEnclosure(self, x, y):
+    def tile_within_enclosure(self, x, y):
         return (x, y) in self.fence_tiles or (x, y) in self.interior_tiles
     
     def add_tile(self, x, y):
@@ -58,24 +60,39 @@ class Enclosure:
                     return True
                 
         return False
-    
-    def is_closed_loop(self):
-        # Loop not closed / loop to small
-        if len(self.fence_tiles) < 4:
-            return False
-        
-        # Pick any fence as starting tile
-        start_x, start_y = next(iter(self.fence_tiles))
 
-        visited = set()
-        visited.add((start_x, start_y))
-        print(f"Start x,y: {start_x}, {start_y}")
-        
-        for nx, ny in self.get_adjacent_fence_tiles(start_x, start_y):
-          if self._traverse(nx, ny, start_x, start_y, visited, True):
-              if len(visited) > len(self.fence_tiles) / 1.5:
-                  return True
-        return False
+    # def is_closed_loop(self):
+    #     print("CHECKING")
+    #     if len(self.fence_tiles) < 4:
+    #         return False
+    #
+    #     start = next(iter(self.fence_tiles))
+    #     print(start)
+    #     visited = set()
+    #     stack = list(self.get_adjacent_fence_tiles(*start))
+    #
+    #     while stack:
+    #         print("Running")
+    #         current = stack.pop()
+    #         print("CUrrent", current)
+    #
+    #         if current == start:
+    #             if len(visited) > len(self.fence_tiles) / 1.5:
+    #                 return True
+    #             continue
+    #
+    #         if current in visited:
+    #             continue
+    #
+    #         visited.add(current)
+    #
+    #         for neighbour in self.get_adjacent_fence_tiles(*current):
+    #             if neighbour not in visited:
+    #                 stack.append(neighbour)
+    #
+    #     print("Flase")
+    #
+    #     return False
         
     def get_midpoint(self):
         x = 0
@@ -88,53 +105,35 @@ class Enclosure:
         y = y // len(self.fence_tiles)
 
         return (x, y)
-    
-    # def recursive_check(self, location, visited):
-    #     if location in self.fence_tiles or location in visited:
-    #         return
-    #
-    #     #TODO: Either check tile data for other enclosure that is within the enclosure or iterate through all the enclosures to check.
-    #
-    #     visited.append(location)
-    #
-    #     x, y = location
-    #
-    #     self.recursive_check((x + 1, y), visited)
-    #     self.recursive_check((x - 1, y), visited)
-    #     self.recursive_check((x, y + 1), visited)
-    #     self.recursive_check((x, y - 1), visited)
-    #
-    # def check_for_overlap(self):
-    #     visited = set()
-
-        return self.recursive_check(self.get_midpoint(), visited)
 
     def _floodBFS(self, location):
-        self.state = "FILLING"
+        # Calculate bounding box of fence tiles
+        min_x = min(t[0] for t in self.fence_tiles) - 1
+        max_x = max(t[0] for t in self.fence_tiles) + 1
+        min_y = min(t[1] for t in self.fence_tiles) - 1
+        max_y = max(t[1] for t in self.fence_tiles) + 1
+
         queue = [location]
         visited = set()
-        x, y = location
 
-        # Start BFS
         while queue:
             current = queue.pop(0)
-
-            # if x < 0 or y < 0 or x >= 40 or y >= 40:
-            #     continue
-
-            # If hit a wall or other filled tiles
-            if current in visited or current in self.fence_tiles:
-                continue
-             
-            visited.add(current)
-            self.fill_queue.append(current)
-
             x, y = current
 
-            queue.append((x + 1, y))
-            queue.append((x - 1, y))
-            queue.append((x, y + 1))
-            queue.append((x, y - 1))
+            if current in visited or current in self.fence_tiles:
+                continue
+
+            # Leaked outside fence bounding box — not a closed enclosure
+            if x < min_x or x > max_x or y < min_y or y > max_y:
+                return False
+
+            visited.add(current)
+            queue.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
+
+        # Stayed contained — valid enclosure
+        self.state = "FILLING"
+        self.fill_queue = list(visited)
+        return True
 
     def update_animation(self):
         if not self.fill_queue:

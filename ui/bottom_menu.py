@@ -1,7 +1,7 @@
-from UI.menu import Menu
+from ui.menu import Menu
 import config
-from UI.button import Button
-from UI.button_icon import ButtonIcon
+from ui.button import Button
+from ui.button_icon import ButtonIcon
 import pygame
 
 class BottomMenu(Menu):

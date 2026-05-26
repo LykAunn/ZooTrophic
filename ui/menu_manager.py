@@ -1,6 +1,6 @@
-from UI.bottom_panel import BottomPanel
-from UI.top_menu import TopPanel
-from UI.bottom_menu import BottomMenu
+from ui.bottom_panel import BottomPanel
+from ui.top_menu import TopPanel
+from ui.bottom_menu import BottomMenu
 
 class MenuManager:
     def __init__(self, screen, game_manager):
@@ -50,3 +50,15 @@ class MenuManager:
         self.bottom_menu.draw()
         self.bottom_panel.draw()
         self.top_panel.draw()
+
+    def on_enclosure_selected(self, enclosure):
+        self.bottom_panel.show(enclosure)
+        self.bottom_menu.hide()
+
+    def on_animal_selected(self, animal):
+        self.bottom_panel.show(animal)
+        self.bottom_menu.hide()
+
+    def on_selection_cleared(self):
+        self.bottom_panel.hide()
+        self.bottom_menu.show()

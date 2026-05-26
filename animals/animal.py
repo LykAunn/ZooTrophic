@@ -1,4 +1,7 @@
 import random
+from importlib.metadata import pass_none
+from unittest import case
+
 import config
 import pygame
 import math
@@ -61,6 +64,16 @@ class Animal:
         self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.direction = "south"
 
+        # Data
+        self.hunger_rate = 0.8
+        self.thirst_rate = 1
+        self.social_type = None
+        self.min_enclosure_size = 10
+        self.energy_drain = 0.1
+        self.max_number_of_animals = 2
+        self.stat_update_timer = 3 # Stat update interval
+        self.stat_timer = 0.0
+
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
 
@@ -86,6 +99,13 @@ class Animal:
             self.screen.blit(self.image_right, (offsetScreenX, offsetScreenY))
 
     def update(self, dt, mousepos):
+        # Update stats of animal
+        self.update_needs(dt)
+        self.stat_timer += dt
+        if self.stat_timer > self.stat_update_timer:
+            self.update_animal()
+            self.stat_update_timer = 0.0
+
         if self.state == "MOVING":
             self.update_jump(dt)
 
@@ -93,14 +113,23 @@ class Animal:
             self.timer += dt
             if self.timer > self.activity_timer:
                 self.timer = 0.0
-                if self.target_coords == self.coords:
-                    self.find_new_tile()
-                else:
-                    self.start_moving()
+                self.decide_next_action()
             
         elif self.state == "HOVERING":
             padding = config.TILE_SIZE // 2
             self.screen_coords = (mousepos[0] - padding, mousepos[1] - padding)
+
+    def decide_next_action(self):
+        """Choose what to do next, prioritises hunger and thirst. If not then wander around"""
+        if self.thirst > 70:
+            self.find_water_source()
+        elif self.hunger > 70:
+            self.find_food_source()
+        else:
+            if self.target_coords == self.coords:
+                self.find_new_tile()
+            else:
+                self.start_moving()
 
 # --- Pathfinding ---
 
@@ -154,11 +183,13 @@ class Animal:
             self.calculate_coord_diff()
             self.timer = 0.0
             self.activity_timer = random.randrange(0,150) / 100 # How many seconds to wait till next jump
+            self.energy -= self.energy_drain
 
             # Snap to target if close enough
             if abs(self.dydx[0] < 7) and abs(self.dydx[1]) < 7:
                 print("reached target")
                 self.screen_coords = self.target_screen_coords
+                # print(self.happiness)
             self.coords = (self.screen_coords[0] // config.TILE_SIZE, self.screen_coords[1] // config.TILE_SIZE)
             return
 
@@ -183,3 +214,56 @@ class Animal:
         dx = self.target_screen_coords[0] - self.screen_coords[0]
         self.dydx = (dy, dx)
         #print(f"dy: {dy}, dx: {dx}")
+
+    def update_needs(self, scaled_dt):
+        self.hunger += scaled_dt * self.hunger_rate
+        self.thirst += scaled_dt * self.thirst_rate
+
+    def calculate_stress(self):
+        self.stress = 0
+        # print("Animal enclosure size = ", self.enclosure.enclosure_size)
+        if self.enclosure.enclosure_size < self.min_enclosure_size:
+            self.stress += 20
+        if self.enclosure.animals_in_enclosure > self.max_number_of_animals:
+            self.stress += 20
+
+    def animals_nearby(self):
+        return self.enclosure.animals_in_enclosure #TODO Calculate number of animals nearby in the enclosure
+
+    def calculate_animal_social_bonus(self):
+        animals_nearby = self.animals_nearby()
+        match self.social_type:
+            case 0:
+                if animals_nearby == 0:
+                    return 10
+                return 0
+            case 1:
+                if animals_nearby == 1:
+                    return 10
+                return 0
+            case 2:
+                if animals_nearby > 2:
+                    return 10
+                return 0
+        return 0
+
+    def calculate_happiness(self):
+        hunger_penalty = max(0, (self.hunger - 50) / 50)
+        thirst_penalty = max(0, (self.thirst - 40) / 60)
+        self.calculate_stress()
+        stress_penalty = self.stress / 100
+        social_bonus = self.calculate_animal_social_bonus()
+
+        self.happiness = 100 - (hunger_penalty + thirst_penalty + stress_penalty) * 33 + social_bonus * 10
+
+    def update_animal(self):
+        """Updates stress and happiness of animal"""
+        self.calculate_stress()
+        self.calculate_happiness()
+        #print(self.hunger)
+
+    def find_food_source(self):
+        pass
+
+    def find_water_source(self):
+        pass

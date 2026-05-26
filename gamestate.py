@@ -1,17 +1,17 @@
-from camera import Camera
-from enclosure_manager import EnclosureManager
-from UI.menu_manager import MenuManager
-from game_clock import GameClock
-from cursor import Cursor
-from animal_manager import AnimalManager
-from UI.clock_menu import ClockMenu
-from player import Player
-from terrain import TerrainRenderer
-from tile_index import TileIndex
+from world.camera import Camera
+from enclosures.enclosure_manager import EnclosureManager
+from ui.menu_manager import MenuManager
+from core.game_clock import GameClock
+from player.cursor import Cursor
+from animals.animal_manager import AnimalManager
+from ui.clock_menu import ClockMenu
+from player.player import Player
+from world.terrain import TerrainRenderer
+from world.tile_index import TileIndex
 import config
 import pygame
 import pygame.gfxdraw
-from decimal import Decimal
+
 
 class GameManager:
     def __init__(self, screen):
@@ -35,6 +35,8 @@ class GameManager:
         self.game_clock.register_hour_listener(self.clock_menu.increment_hour)
         self.terrain_generator = TerrainRenderer(self.screen)
         self.camera = Camera()
+        self.enclosure_manager.clear_menu = self.clear_menu
+        self.animal_manager.clear_menu = self.clear_menu
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -55,24 +57,24 @@ class GameManager:
         self.menu_manager.update(dt)
         self.animal_manager.update(game_dt, mouse_pos)
 
-        # UI
+        # ui
         self.cursor.update(mouse_pos, self.top_left_player_coords)
         self.clock_menu.update(dt)
 
-        if self.enclosure_manager.state == "SELECTED":
-            if not self.menu_manager.bottom_menu_visible:
-                self.menu_manager.show(self.enclosure_manager.selected_enclosure, 1)
-                self.menu_manager.hide(2)
-
-        elif self.animal_manager.state == "SELECTED":
-            if not self.menu_manager.bottom_menu_visible:
-                self.menu_manager.show(None, 1)
-                self.menu_manager.hide(2)
-
-        else:
-            if self.menu_manager.bottom_menu_visible:
-                self.menu_manager.show(None, 2)
-                self.menu_manager.hide(1)
+        # if self.enclosure_manager.state == "SELECTED":
+        #     if not self.menu_manager.bottom_menu_visible:
+        #         self.menu_manager.show(self.enclosure_manager.selected_enclosure, 1)
+        #         self.menu_manager.hide(2)
+        #
+        # elif self.animal_manager.state == "SELECTED":
+        #     if not self.menu_manager.bottom_menu_visible:
+        #         self.menu_manager.show(None, 1)
+        #         self.menu_manager.hide(2)
+        #
+        # else:
+        #     if self.menu_manager.bottom_menu_visible:
+        #         self.menu_manager.show(None, 2)
+        #         self.menu_manager.hide(1)
 
     def handle_event(self, event):
         self.menu_manager.bottom_panel.handle_event(event)
@@ -102,9 +104,10 @@ class GameManager:
                 return # Stop processing the click
             
             # Only check for animal selection if not hovering
-            animal = self.animal_manager.get_animal_at(self.mouse_pos)
+            animal = self.animal_manager.get_animal_at(self.mouse_pos, self.top_left_player_coords)
             if animal is not None:
                 self.animal_manager.select_animal(animal)
+                self.menu_manager.on_animal_selected(animal)
                 self.enclosure_manager.able_to_select = False
                 print("SELECT ANIMAL")
                 # Give priority to animal. Select animal instead of enclosure
@@ -113,6 +116,8 @@ class GameManager:
         # Only select enclosure if no animal was clicked
         if self.animal_manager.state == "IDLE":
             self.enclosure_manager.handle_event(event)
+            enclosure = self.enclosure_manager.selected_enclosure
+            if enclosure: self.menu_manager.on_enclosure_selected(enclosure)
 
     def draw(self, dt):
         # Bounds calculation
@@ -138,11 +143,13 @@ class GameManager:
         else:
             pygame.mouse.set_visible(False)
 
-        # UI
+        # ui
         self.menu_manager.draw_menus()
         self.clock_menu.draw(self.screen)
 
     def on_build_clicked(self):
         self.enclosure_manager.new_enclosure()
-        self.enclosure_manager.change_state("SELECTED")
-        print(self.enclosure_manager.state)
+        self.enclosure_manager.change_state("DRAWING")
+
+    def clear_menu(self):
+        self.menu_manager.on_selection_cleared()

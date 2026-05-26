@@ -24,7 +24,7 @@ class GameClock:
         self.seconds_per_hour = 2#config.seconds_per_hour
 
         # Cached values
-        self.game_dt = 0 # In game dt (everything other than UI)
+        self.game_dt = 0 # In game dt (everything other than ui)
 
     def update(self, dt):
         """Updates game clock and returns scaled dt for fast-forwarding"""

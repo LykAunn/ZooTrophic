@@ -1,20 +1,31 @@
 import pygame
 import config
-from UI.menu import Menu
-from UI.button import Button
+from animals.animal import Animal
+from ui.menu import Menu
+from ui.button import Button
+from enclosures.enclosure import Enclosure
+
 
 class BottomPanel(Menu):
     def __init__(self, screen, game_manager):
         super().__init__(screen, config.SCREENHEIGHT, False, 80, config.SCREENHEIGHT, game_manager)
 
         self.selected_enclosure = None
+        self.selected_animal = None
         self.buttons = []
         self.button = Button(pygame.Rect(300, self.current_y + 25, 100, 20), "BUILD")
         self.menu_image = pygame.image.load("resources/Bottom_Menu.png").convert_alpha()
         self.menu_image = pygame.transform.scale_by(self.menu_image, config.pixel_size)
 
-    def show(self, enclosure):
-        self.selected_enclosure = enclosure
+    def show(self, subject):
+        if isinstance(subject, Enclosure):
+            self.selected_enclosure = subject
+            self.selected_animal = None
+        elif isinstance(subject, Animal):
+            print("AnimAl")
+            self.selected_animal = subject
+            self.selected_enclosure = None
+
         self.target_y = config.SCREENHEIGHT - self.menu_height
         self.is_visible = True
 

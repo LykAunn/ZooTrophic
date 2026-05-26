@@ -1,6 +1,6 @@
 import pygame
 import config
-from UI.button import Button
+from ui.button import Button
 
 class ButtonIcon(Button):
     def __init__(self, image_path, image_path_clicked, y, x, callback = None):

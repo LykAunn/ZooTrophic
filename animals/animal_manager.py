@@ -1,4 +1,4 @@
-from animal import Animal
+from animals.animal import Animal
 import config
 import pygame
 
@@ -9,6 +9,7 @@ class AnimalManager:
         self.screen = screen
         self.selected_animal = None
         self.state = "IDLE"
+        self.clear_menu = None
 
     def draw(self, camera_offset):
         if self.animal_set:
@@ -31,9 +32,11 @@ class AnimalManager:
             if event.key == pygame.K_ESCAPE:
                 if self.state == "SELECTED":
                     self.deselect_animal()
+                    if self.clear_menu:
+                        self.clear_menu()
 
     def create_new_animal(self):
-        self.selected_animal = Animal(self.next_id, None, 0, 0, "chicken", 'resources/chicken.png', 'resources/Chicken_right.png',self.screen)
+        self.selected_animal = Animal(self.next_id, None, 0, 0, "chicken", 'resources/chicken.png', 'resources/Chicken_right.png', self.screen)
         self.state = "HOVERING"
         print(self.selected_animal)
 
@@ -54,6 +57,7 @@ class AnimalManager:
         self.selected_animal.set_animal_tile(world_pos)
         self.selected_animal.find_new_tile()
         self.selected_animal.start_moving()
+        enclosure.animals_in_enclosure += 1
 
         # Add to set
         self.animal_set.add(self.selected_animal)
@@ -70,17 +74,17 @@ class AnimalManager:
         self.selected_animal = None
         self.state = "IDLE"
 
-    def get_animal_at(self, mouse_pos):
+    def get_animal_at(self, mouse_pos, camera_offset):
         """Locates animal based on mouse_pos parameter. mouse_pos is a tuple with x and y"""
         for animal in self.animal_set:
             # Check if mouse is within animal sprite bounds
-            left = animal.screen_coords[0]
-            top = animal.screen_coords[1]
-            right = left + config.TILE_SIZE
-            bottom = top + config.TILE_SIZE
+            screen_x = animal.screen_coords[0] - camera_offset[0] * config.TILE_SIZE
+            screen_y = animal.screen_coords[1] - camera_offset[1] * config.TILE_SIZE
+            right = screen_x + config.TILE_SIZE * 1.5
+            bottom = screen_y + config.TILE_SIZE * 1.5
 
-            if left <= mouse_pos[0] <= right and top <= mouse_pos[1] <= bottom:
-                print("FOUND ANIMAL")
+            if screen_x <= mouse_pos[0] <= screen_x + config.TILE_SIZE * 1.5 and \
+                screen_y <= mouse_pos[1] <= screen_y + config.TILE_SIZE * 1.5:
                 return animal
         
         print("NONE")

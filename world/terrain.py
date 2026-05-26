@@ -4,7 +4,8 @@ import pygame
 class TerrainRenderer:
     def __init__(self, screen):
         self.screen = screen
-        self.grass_variants =  [pygame.image.load("resources/grass.png").convert_alpha(), pygame.image.load("resources/grass2.png").convert_alpha(),
+        self.grass_variants =  [pygame.image.load("resources/grass.png").convert_alpha(), pygame.image.load(
+            "resources/grass2.png").convert_alpha(),
                                 pygame.image.load("resources/grass3.png").convert_alpha()]
         self.grass_variants[2] = pygame.transform.scale(self.grass_variants[2], (config.TILE_SIZE, config.TILE_SIZE))
 

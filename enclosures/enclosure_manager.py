@@ -1,7 +1,7 @@
 import pygame
 import config
-from enclosure import Enclosure
-from animal import Animal
+from enclosures.enclosure import Enclosure
+
 
 class EnclosureManager:
     def __init__(self, screen, tile_index):
@@ -19,6 +19,7 @@ class EnclosureManager:
         self.is_drawing = False
         self.hovered_tile = None
         self.hovered_enclosure = None
+        self.clear_menu = None
 
         # Tile Image #
         self.fence = pygame.image.load('resources/fence.png').convert_alpha()
@@ -60,30 +61,28 @@ class EnclosureManager:
                 # Select enclosure
                 if self.select_enclosure() is not None:
                     self.state = "SELECTED"
-            elif self.selected_enclosure.state == "COMPLETE":
-                if not self.selected_enclosure.tileWithinEnclosure(self.grid_x, self.grid_y):
+
+            elif self.state == "DRAWING":
+                self.startDrawing(self.grid_x, self.grid_y)
+
+            elif self.selected_enclosure.state == "SELECTED":
+                if not self.selected_enclosure.tile_within_enclosure(self.grid_x, self.grid_y):
                     self.deselect_enclosure()
-                        
-            else:
-                if self.selected_enclosure.state != "COMPLETE":
-                   self.startDrawing(self.grid_x, self.grid_y)
 
         elif event.type == pygame.MOUSEBUTTONUP:
-            if self.state == "SELECTED":
-               self.finishDrawing()
+            if self.state == "DRAWING" and self.is_drawing:
+                self.finishDrawing()
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                if self.state == "SELECTED":
+                if self.state in ("SELECTED", "DRAWING"):
                     self.deselect_enclosure()
-
-            # elif event.key == pygame.K_q:
-                # self.animal.find_new_tile()
-
+                    if self.clear_menu:
+                        self.clear_menu()
 
     def get_enclosure_at(self, x, y):
             for enclosure in self.enclosures:
-                if enclosure.tileWithinEnclosure(x, y):
+                if enclosure.tile_within_enclosure(x, y):
                     return enclosure
             return None
     
@@ -107,20 +106,18 @@ class EnclosureManager:
 
     def startDrawing(self, x, y):
         self.is_drawing = True
-        print("DRAWING")
+        self.state = "DRAWING"
 
     def finishDrawing(self):
         print("FINISH")
         if self.fences_remaining > 0 :
             if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
-                if self.selected_enclosure.is_closed_loop():
-                    self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint())
-                    print("YES---------------------------")
-
+                if self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()):
                     self.selected_enclosure.calculate_fences()
-
-                    self.deselect_enclosure()
                     self.state = "READY"
+                    self.selected_enclosure = None
+                    if self.clear_menu:
+                        self.clear_menu()
 
         self.is_drawing = False
 
@@ -141,7 +138,7 @@ class EnclosureManager:
 
     def get_enclosureid_at(self, x, y):
         for enclosure in self.enclosures:
-            if enclosure.tileWithinEnclosure(x, y):
+            if enclosure.tile_within_enclosure(x, y):
                 return enclosure.enclosure_id
 
         return None
