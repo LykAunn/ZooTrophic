@@ -48,6 +48,7 @@ class ClockMenu:
             print("Font not found, using default.")
             self.font = pygame.font.Font(None, 20)
 
+        # Text
         self.time_surf = self.font.render("None", True, (0, 0, 0))
         self.time_location = (self.hanging_sign_location[0] + (config.pixel_size * 8),
                               self.hanging_sign_location[1] + (config.pixel_size * 10))
@@ -82,7 +83,6 @@ class ClockMenu:
 
         # Hanging sign
         screen.blit(self.hanging_sign_image, self.hanging_sign_location)
-
 
         # Time display
         screen.blit(self.time_surf, self.time_location)

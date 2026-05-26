@@ -216,8 +216,8 @@ class Animal:
         #print(f"dy: {dy}, dx: {dx}")
 
     def update_needs(self, scaled_dt):
-        self.hunger += scaled_dt * self.hunger_rate
-        self.thirst += scaled_dt * self.thirst_rate
+        self.hunger += scaled_dt * self.hunger_rate if self.hunger < 100 else self.hunger
+        self.thirst += scaled_dt * self.thirst_rate if self.thirst < 100 else self.thirst
 
     def calculate_stress(self):
         self.stress = 0
@@ -267,3 +267,12 @@ class Animal:
 
     def find_water_source(self):
         pass
+
+    def get_hunger(self):
+        return int(self.hunger), 100
+
+    def get_thirst(self):
+        return self.thirst, 100
+
+    def get_happiness(self):
+        return int(self.happiness), 100
