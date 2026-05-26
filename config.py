@@ -10,7 +10,7 @@ noOfTiles_y = SCREENHEIGHT // TILE_SIZE
 pixel_size = TILE_SIZE // 16
 
 # ANIMATION #
-fill_speed = 2
+fill_speed = 4
 glow_duration = 1
 menu_movement_speed = 6
 

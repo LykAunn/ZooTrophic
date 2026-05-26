@@ -29,14 +29,20 @@ class Enclosure:
         self.fence_tiles.add((x, y))
         self.tile_index.register_tile(x, y, "fence", self.enclosure_id)
 
-    def get_adjacent_fence_tiles(self, x, y):
-        adjacent_tiles = ((x - 1, y) , (x + 1, y) , (x, y + 1) , (x, y - 1), (x + 1, y+ 1), (x + 1, y - 1), (x - 1, y+ 1), (x -1, y -1))
+    def get_adjacent_fence_tiles(self, x, y, inner):
+        adjacent_tiles = ((x - 1, y) , (x + 1, y) , (x, y + 1) , (x, y - 1))
+        diagonal_tiles = ((x + 1, y+ 1), (x + 1, y - 1), (x - 1, y+ 1), (x -1, y -1))
         adjacent_fence_tiles = set()
 
-        # Check the 4 possible adjacent tiles if it is a fence tile
-        for tile in adjacent_tiles:
-            if tile in self.fence_tiles:
-                adjacent_fence_tiles.add(tile)
+        if not inner:
+            # Check the 4 possible adjacent tiles if it is a fence tile
+            for tile in adjacent_tiles and diagonal_tiles:
+                if tile in self.fence_tiles:
+                    adjacent_fence_tiles.add(tile)
+        else:
+            for tile in adjacent_tiles:
+                if tile not in self.fence_tiles:
+                    adjacent_fence_tiles.add(tile)
 
         return adjacent_fence_tiles
     
@@ -106,7 +112,7 @@ class Enclosure:
 
         return (x, y)
 
-    def _floodBFS(self, location):
+    def flood_bfs(self, location):
         # Calculate bounding box of fence tiles
         min_x = min(t[0] for t in self.fence_tiles) - 1
         max_x = max(t[0] for t in self.fence_tiles) + 1
@@ -115,6 +121,7 @@ class Enclosure:
 
         queue = [location]
         visited = set()
+        fill_order = [location]
 
         while queue:
             current = queue.pop(0)
@@ -128,11 +135,12 @@ class Enclosure:
                 return False
 
             visited.add(current)
+            fill_order.append(current)
             queue.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
 
         # Stayed contained — valid enclosure
         self.state = "FILLING"
-        self.fill_queue = list(visited)
+        self.fill_queue = fill_order
         return True
 
     def update_animation(self):

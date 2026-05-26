@@ -63,7 +63,7 @@ class EnclosureManager:
                     self.state = "SELECTED"
 
             elif self.state == "DRAWING":
-                self.startDrawing(self.grid_x, self.grid_y)
+                self.start_drawing(self.grid_x, self.grid_y)
 
             elif self.selected_enclosure.state == "SELECTED":
                 if not self.selected_enclosure.tile_within_enclosure(self.grid_x, self.grid_y):
@@ -71,7 +71,7 @@ class EnclosureManager:
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.state == "DRAWING" and self.is_drawing:
-                self.finishDrawing()
+                self.finish_drawing()
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -104,15 +104,15 @@ class EnclosureManager:
         self.selected_enclosure = None
         self.state = "READY"
 
-    def startDrawing(self, x, y):
+    def start_drawing(self, x, y):
         self.is_drawing = True
         self.state = "DRAWING"
 
-    def finishDrawing(self):
+    def finish_drawing(self):
         print("FINISH")
         if self.fences_remaining > 0 :
             if self.selected_enclosure and self.selected_enclosure.state != "COMPLETE":
-                if self.selected_enclosure._floodBFS(self.selected_enclosure.get_midpoint()):
+                if self.selected_enclosure.flood_bfs(self.selected_enclosure.get_midpoint()):
                     self.selected_enclosure.calculate_fences()
                     self.state = "READY"
                     self.selected_enclosure = None
@@ -136,7 +136,7 @@ class EnclosureManager:
         image = surface.subsurface(clipR)
         return image.copy()
 
-    def get_enclosureid_at(self, x, y):
+    def get_enclosure_id_at(self, x, y):
         for enclosure in self.enclosures:
             if enclosure.tile_within_enclosure(x, y):
                 return enclosure.enclosure_id
