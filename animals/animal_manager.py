@@ -27,25 +27,31 @@ class AnimalManager:
         if self.state == "HOVERING" and self.selected_animal is not None:
             self.selected_animal.update(dt, mousepos)
 
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                if self.state == "SELECTED":
-                    self.deselect_animal()
-                    if self.clear_menu:
-                        self.clear_menu()
+    def handle_event(self, event, mouse_pos, camera_offset):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.state == "SELECTED":
+                self.deselect_animal()
+                return  # consume the click entirely
+
+            animal = self.get_animal_at(mouse_pos, camera_offset)
+            if animal is not None:
+                self.select_animal(animal)
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE and self.state == "SELECTED":
+                self.deselect_animal()
 
     def create_new_animal(self):
         self.selected_animal = Animal(self.next_id, None, 0, 0, "chicken", 'resources/chicken.png', 'resources/Chicken_right.png', self.screen)
         self.state = "HOVERING"
         print(self.selected_animal)
 
-    def select_animal(self, id):
-        i = 0
-        animals = list(self.animal_set)
-        while self.selected_animal.animal_id != id and i < len(self.animal_set):
-            self.selected_animal = animals[i]
-            i += 1
+    # def select_animal(self, id):
+    #     i = 0
+    #     animals = list(self.animal_set)
+    #     while self.selected_animal.animal_id != id and i < len(self.animal_set):
+    #         self.selected_animal = animals[i]
+    #         i += 1
 
     def assign_enclosure(self, enclosure):
         """Assigns currently selected animal to an enclosure. Requires an animal to be selected TODO: implement checks for enclosure type etc"""
@@ -78,8 +84,8 @@ class AnimalManager:
         """Locates animal based on mouse_pos parameter. mouse_pos is a tuple with x and y"""
         for animal in self.animal_set:
             # Check if mouse is within animal sprite bounds
-            screen_x = animal.screen_coords[0] - camera_offset[0] * config.TILE_SIZE
-            screen_y = animal.screen_coords[1] - camera_offset[1] * config.TILE_SIZE
+            screen_x = animal.world_pixel_coords[0] - camera_offset[0] * config.TILE_SIZE
+            screen_y = animal.world_pixel_coords[1] - camera_offset[1] * config.TILE_SIZE
             right = screen_x + config.TILE_SIZE * 1.5
             bottom = screen_y + config.TILE_SIZE * 1.5
 

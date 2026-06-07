@@ -1,3 +1,4 @@
+from objects.object_manager import ObjectManager
 from world.camera import Camera
 from enclosures.enclosure_manager import EnclosureManager
 from ui.menu_manager import MenuManager
@@ -37,6 +38,7 @@ class GameManager:
         self.camera = Camera()
         self.enclosure_manager.clear_menu = self.clear_menu
         self.animal_manager.clear_menu = self.clear_menu
+        self.object_manager = ObjectManager(self.tile_index, self.screen)
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -56,6 +58,7 @@ class GameManager:
         self.enclosure_manager.update(self.world_mouse_pos, dt)
         self.menu_manager.update(dt)
         self.animal_manager.update(game_dt, mouse_pos)
+        self.object_manager.update(self.world_mouse_pos)
 
         # ui
         self.cursor.update(mouse_pos, self.top_left_player_coords)
@@ -79,15 +82,18 @@ class GameManager:
     def handle_event(self, event):
         self.menu_manager.bottom_panel.handle_event(event)
         self.menu_manager.bottom_menu.handle_event(event)
-        self.animal_manager.handle_event(event)
         self.clock_menu.handle_event(event)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_b:
                 self.animal_manager.create_new_animal()
+            elif event.key == pygame.K_v:
+                self.object_manager.start_placement()
             elif event.key == pygame.K_ESCAPE:
                 if self.animal_manager.state == "HOVERING":
                     self.animal_manager.cancel_placement()
+                if self.object_manager.state == "HOVERING":
+                    self.object_manager.cancel_placement()
             elif event.key == pygame.K_1:
                 if not self.game_clock.paused:
                     self.game_clock.pause()
@@ -95,6 +101,17 @@ class GameManager:
                     self.game_clock.unpause()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
+            # # Deselect enclosure first if one is selected, consume the click
+            # if self.enclosure_manager.state == "SELECTED":
+            #     self.enclosure_manager.deselect_enclosure()
+            #     self.menu_manager.on_selection_cleared()
+            #     return
+            #
+            #     # Deselect animal first if one is selected, consume the click
+            # if self.animal_manager.state == "SELECTED":
+            #     self.animal_manager.deselect_animal()
+            #     return
+
             if self.animal_manager.state == "HOVERING":
                 enclosure = self.enclosure_manager.get_enclosure_at(self.world_mouse_pos[0], self.world_mouse_pos[1])
                 if enclosure is not None:
@@ -104,20 +121,40 @@ class GameManager:
                 return # Stop processing the click
             
             # Only check for animal selection if not hovering
-            animal = self.animal_manager.get_animal_at(self.mouse_pos, self.top_left_player_coords)
-            if animal is not None:
-                self.animal_manager.select_animal(animal)
-                self.menu_manager.on_animal_selected(animal)
-                self.enclosure_manager.able_to_select = False
-                print("SELECT ANIMAL")
-                # Give priority to animal. Select animal instead of enclosure
+            if self.enclosure_manager.state == "READY":
+                animal_before = self.animal_manager.selected_animal
+                self.animal_manager.handle_event(event, self.mouse_pos, self.top_left_player_coords)
+                animal_after = self.animal_manager.selected_animal
+
+                if animal_before is not None and animal_after is None:
+                    self.menu_manager.on_selection_cleared()
+                    return
+                elif animal_after is not None and animal_before is None:
+                    self.menu_manager.on_animal_selected(animal_after)
+                    return
+
+            if self.object_manager.state == "HOVERING":
+                enclosure = self.enclosure_manager.get_enclosure_at(self.world_mouse_pos[0], self.world_mouse_pos[1])
+                if enclosure is not None and self.object_manager.pending_object == "food_dish":
+                    self.object_manager.confirm_placement(self.world_mouse_pos[0], self.world_mouse_pos[1], enclosure)
+
+                else :
+                    print("Unable to find enclosure")
+                    self.object_manager.cancel_placement()
                 return
-                
+
         # Only select enclosure if no animal was clicked
-        if self.animal_manager.state == "IDLE":
-            self.enclosure_manager.handle_event(event)
-            enclosure = self.enclosure_manager.selected_enclosure
-            if enclosure: self.menu_manager.on_enclosure_selected(enclosure)
+        if self.animal_manager.state == "IDLE" and self.object_manager.state == "NONE":
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.KEYDOWN):
+                enclosure_before = self.enclosure_manager.selected_enclosure
+                self.enclosure_manager.handle_event(event)
+                enclosure_after = self.enclosure_manager.selected_enclosure
+
+                if enclosure_before is not None and enclosure_after is None:
+                    self.menu_manager.on_selection_cleared()
+                    return
+                elif enclosure_after:
+                    self.menu_manager.on_enclosure_selected(enclosure_after)
 
     def draw(self, dt):
         # Bounds calculation
@@ -132,12 +169,13 @@ class GameManager:
 
         # Enclosure Tiles
         self.enclosure_manager.draw_enclosures(dt, tiles, self.top_left_player_coords[0], self.top_left_player_coords[1])
+        self.object_manager.draw(self.top_left_player_coords[0], self.top_left_player_coords[1])
 
         # Animals
         self.animal_manager.draw(self.top_left_player_coords)
 
         # Cursor
-        if self.animal_manager.state != "HOVERING":
+        if self.animal_manager.state != "HOVERING" and self.object_manager.state != "HOVERING":
             pygame.mouse.set_visible(True)
             self.cursor.draw_cursor()
         else:

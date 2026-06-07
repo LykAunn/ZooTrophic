@@ -21,4 +21,4 @@ class FoodDish:
             self.food_amount = new_amount
 
     def distance_to(self, animal_pos):
-        return math.sqrt((self.pos[0] - animal_pos[0])**2 - (self.pos[1] - animal_pos[1])**2)
+        return (self.position[0] - animal_pos[0])**2 + (self.position[1] - animal_pos[1])**2

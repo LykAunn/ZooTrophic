@@ -13,6 +13,7 @@ class EnclosureManager:
         self.screen = screen
         self.state = "READY"
         self.fences_remaining = 100
+        self.able_to_select = True
 
         # Drawing #
         self.selected_enclosure = None
@@ -27,6 +28,9 @@ class EnclosureManager:
 
         self.sand = pygame.image.load('resources/sand.png').convert()
         self.sand = pygame.transform.scale(self.sand, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
+
+        self.food = pygame.image.load('resources/food.png').convert_alpha()
+        self.food = pygame.transform.scale(self.food, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
 
         self.glow_surface = pygame.Surface((config.TILE_SIZE, config.TILE_SIZE))
         self.glow_surface.fill((249, 215, 126)) #((255, 255, 200))
@@ -65,7 +69,7 @@ class EnclosureManager:
             elif self.state == "DRAWING":
                 self.start_drawing(self.grid_x, self.grid_y)
 
-            elif self.selected_enclosure.state == "SELECTED":
+            elif self.state == "SELECTED":
                 if not self.selected_enclosure.tile_within_enclosure(self.grid_x, self.grid_y):
                     self.deselect_enclosure()
 
@@ -159,6 +163,9 @@ class EnclosureManager:
                 # Get fence orientation from enclosure
                 image_index = enclosure.fence_orientation.get((tile_x, tile_y), 1)
                 self.screen.blit(self.fence_images[image_index], (screenx, screeny))
+
+            elif tile_type == "food_dish":
+                self.screen.blit(self.food, (screenx, screeny))
 
             elif tile_type == "interior":
                 self.screen.blit(self.sand, (screenx, screeny))

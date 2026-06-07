@@ -54,14 +54,14 @@ class Animal:
         self.max_move_distance = 25
         self.jump_x = 0                   # Pixels to move in that jump
         self.jump_y = 0
-        self.dydx = (0,0)
-        self.start_location = (x, y)
+        self.pixel_delta = (0, 0) # (dy, dx)
+        self.jump_start_pos = (x, y)
 
         # Position and movement
         self.coords = (x, y)
-        self.screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
+        self.world_pixel_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.target_coords = (x, y)
-        self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
+        self.target_world_pixel_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
         self.direction = "south"
 
         # Data
@@ -83,11 +83,11 @@ class Animal:
     def set_animal_tile(self, tile):
         """Sets animals coordinates to input tile (x,y)"""
         self.coords = tile
-        self.screen_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
+        self.world_pixel_coords = (tile[0] * config.TILE_SIZE, tile[1] * config.TILE_SIZE)
 
     def draw(self, camera_offset):
-        offsetScreenX = self.screen_coords[0]
-        offsetScreenY = self.screen_coords[1]
+        offsetScreenX = self.world_pixel_coords[0]
+        offsetScreenY = self.world_pixel_coords[1]
 
         if self.state != "HOVERING":
             offsetScreenX -= camera_offset[0] * config.TILE_SIZE
@@ -104,7 +104,7 @@ class Animal:
         self.stat_timer += dt
         if self.stat_timer > self.stat_update_timer:
             self.update_animal()
-            self.stat_update_timer = 0.0
+            self.stat_timer = 0.0
 
         if self.state == "MOVING":
             self.update_jump(dt)
@@ -117,13 +117,13 @@ class Animal:
             
         elif self.state == "HOVERING":
             padding = config.TILE_SIZE // 2
-            self.screen_coords = (mousepos[0] - padding, mousepos[1] - padding)
+            self.world_pixel_coords = (mousepos[0] - padding, mousepos[1] - padding)
 
     def decide_next_action(self):
         """Choose what to do next, prioritises hunger and thirst. If not then wander around"""
-        if self.thirst > 70:
-            self.find_water_source()
-        elif self.hunger > 70:
+        #if self.thirst > 70:
+            #self.find_water_source()
+        if self.hunger > 70: #TODO: keeps finding food source when deciding next action, should start moving instead
             self.find_food_source()
         else:
             if self.target_coords == self.coords:
@@ -138,7 +138,7 @@ class Animal:
         if self.enclosure:
             x, y = random.choice(list(self.enclosure.interior_tiles))
             self.target_coords = (x, y)
-            self.target_screen_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
+            self.target_world_pixel_coords = (x * config.TILE_SIZE, y * config.TILE_SIZE)
             print(f"x: {x}, y:{y}")
             self.calculate_coord_diff()
 
@@ -149,8 +149,8 @@ class Animal:
 
         # Calculation of current jump distance (x)
         # Prevent over-movement
-        if abs(self.dydx[1]) > 15:
-            if self.dydx[1] > 0:
+        if abs(self.pixel_delta[1]) > 15:
+            if self.pixel_delta[1] > 0:
                 jump = random.randrange(5, self.max_move_distance)
                 self.direction = "right"
             else:
@@ -159,20 +159,20 @@ class Animal:
 
             self.jump_x =  jump
         else:
-            self.jump_x = self.dydx[1]
+            self.jump_x = self.pixel_delta[1]
 
         # Calculation of current jump distance (y)
-        if abs(self.dydx[0]) < 15:
-            self.jump_y = self.dydx[0]
+        if abs(self.pixel_delta[0]) < 15:
+            self.jump_y = self.pixel_delta[0]
 
         else:
 
-            self.jump_y = random.randrange(7, self.max_jump_height) if self.dydx[0] > 0 else (
+            self.jump_y = random.randrange(7, self.max_jump_height) if self.pixel_delta[0] > 0 else (
                 random.randrange(-1 * self.max_jump_height, -5)
             )
 
         #print(f"jump: {self.jump_x}, jump_y: {self.jump_y}")
-        self.start_location = self.screen_coords
+        self.jump_start_pos = self.world_pixel_coords
 
     def update_jump(self, dt):
         self.timer += dt * 5
@@ -186,17 +186,17 @@ class Animal:
             self.energy -= self.energy_drain
 
             # Snap to target if close enough
-            if abs(self.dydx[0] < 7) and abs(self.dydx[1]) < 7:
+            if abs(self.pixel_delta[0]) < 7 and abs(self.pixel_delta[1]) < 7:
                 print("reached target")
-                self.screen_coords = self.target_screen_coords
+                self.world_pixel_coords = self.target_world_pixel_coords
                 # print(self.happiness)
-            self.coords = (self.screen_coords[0] // config.TILE_SIZE, self.screen_coords[1] // config.TILE_SIZE)
+            self.coords = (self.world_pixel_coords[0] // config.TILE_SIZE, self.world_pixel_coords[1] // config.TILE_SIZE)
             return
 
         jump_progress = self.timer / self.jump_duration
 
         # X calculation during jump
-        x = self.start_location[0] + self.jump_x * jump_progress
+        x = self.jump_start_pos[0] + self.jump_x * jump_progress
 
         # Jumping movement
         arc_height = math.sin(jump_progress * math.pi) * self.max_jump_height
@@ -204,15 +204,15 @@ class Animal:
         # Height gained after jump
         linear_climb = self.jump_y * jump_progress
 
-        y = self.start_location[1] + linear_climb - arc_height
+        y = self.jump_start_pos[1] + linear_climb - arc_height
 
-        self.screen_coords = (int(x), int(y))
+        self.world_pixel_coords = (int(x), int(y))
 
     def calculate_coord_diff(self):
         """Calculates difference in x and y coordinates from target"""
-        dy = self.target_screen_coords[1] - self.screen_coords[1]
-        dx = self.target_screen_coords[0] - self.screen_coords[0]
-        self.dydx = (dy, dx)
+        dy = self.target_world_pixel_coords[1] - self.world_pixel_coords[1]
+        dx = self.target_world_pixel_coords[0] - self.world_pixel_coords[0]
+        self.pixel_delta = (dy, dx)
         #print(f"dy: {dy}, dx: {dx}")
 
     def update_needs(self, scaled_dt):
@@ -263,10 +263,14 @@ class Animal:
         #print(self.hunger)
 
     def find_food_source(self):
-        food_tile = self.enclosure.get_nearest_food_tile()
+        food_tile = self.enclosure.get_nearest_food_tile(self.coords)
         if food_tile:
-            self.target_coords = food_tile.coords
-            self.start_moving()
+            self.target_coords = food_tile.position
+            self.target_world_pixel_coords = (food_tile.position[0] * config.TILE_SIZE,
+                                              food_tile.position[1] * config.TILE_SIZE)
+            self.calculate_coord_diff()
+            if self.pixel_delta[0] > 0 and self.pixel_delta[1] > 0:
+                self.start_moving()
         else:
             return
 
