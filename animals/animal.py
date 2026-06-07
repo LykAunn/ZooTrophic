@@ -216,8 +216,8 @@ class Animal:
         #print(f"dy: {dy}, dx: {dx}")
 
     def update_needs(self, scaled_dt):
-        self.hunger += scaled_dt * self.hunger_rate if self.hunger < 100 else self.hunger
-        self.thirst += scaled_dt * self.thirst_rate if self.thirst < 100 else self.thirst
+        self.hunger += scaled_dt * self.hunger_rate if self.hunger < 100 else 0
+        self.thirst += scaled_dt * self.thirst_rate if self.thirst < 100 else 0
 
     def calculate_stress(self):
         self.stress = 0
@@ -263,7 +263,12 @@ class Animal:
         #print(self.hunger)
 
     def find_food_source(self):
-        pass
+        food_tile = self.enclosure.get_nearest_food_tile()
+        if food_tile:
+            self.target_coords = food_tile.coords
+            self.start_moving()
+        else:
+            return
 
     def find_water_source(self):
         pass

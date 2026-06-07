@@ -13,6 +13,7 @@ pixel_size = TILE_SIZE // 16
 fill_speed = 3
 glow_duration = 1
 menu_movement_speed = 6
+blink_speed = 0.5
 
 # TIME SETTINGS #
 seconds_per_hour = 10

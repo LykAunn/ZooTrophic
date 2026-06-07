@@ -16,6 +16,9 @@ class BottomPanel(Menu):
         self.panel_state = States.EMPTY
         self.hide_timer = 0
         self.hide_wait_time = 2
+        self.blink_visible = True # Boolean for blinking stat bar
+        self.blink_timer = 0.0
+        self.should_blink = False
 
         # Button
         self.buttons = []
@@ -41,8 +44,9 @@ class BottomPanel(Menu):
             self.font = pygame.font.Font(None, 20)
 
         # Text
-        #self.
-
+        self.text_surf1 = self.font.render("Hunger", True, (0,0,0))
+        self.text_surf2 = self.font.render("Thirst", True, (0,0,0))
+        
     def show(self, subject):
         if isinstance(subject, Enclosure):
             self.panel_state = States.ENCLOSURE
@@ -71,14 +75,18 @@ class BottomPanel(Menu):
         self.button.draw(self.screen)
 
         if self.panel_state == States.ANIMAL or (self.panel_state == States.TRANSITION and self.selected_animal is not None):
-            self.draw_inverse_stat_bar(self.menu_x + 100, self.current_y + 83, self.bar_width, self.bar_height, self.selected_animal.get_hunger())
-            self.draw_inverse_stat_bar(self.menu_x + 100, self.current_y + 113, self.bar_width, self.bar_height, self.selected_animal.get_thirst())
+            self.draw_inverse_stat_bar(self.menu_x + 150, self.current_y + 83, self.bar_width, self.bar_height, self.selected_animal.get_hunger())
+            self.draw_inverse_stat_bar(self.menu_x + 150, self.current_y + 113, self.bar_width, self.bar_height, self.selected_animal.get_thirst())
+            self.draw_text(self.menu_x + 50, self.current_y + 83, self.text_surf1)
+            self.draw_text(self.menu_x + 50, self.current_y + 113, self.text_surf2)
 
     def update(self, dt):
         super().update(dt)
         self.button.update_ypos(self.current_y + 25, dt)
         if self.panel_state == States.TRANSITION:
             self.timer_countdown(dt)
+        if self.should_blink is True:
+            self.update_blink(dt)
 
     def handle_event(self, event):
         self.button.handle_event(event)
@@ -106,9 +114,14 @@ class BottomPanel(Menu):
 
         if percentage > 0.65:
             if percentage > 0.8:
+                self.should_blink = True
+                if not self.blink_visible:
+                    return
                 color = (181, 89, 69)
             else:
                 color = (222, 159, 71)
+                self.should_blink = False
+                self.blink_visible = True
 
         pygame.draw.rect(self.screen, color, (x, y, bar_width, height))
 
@@ -118,3 +131,13 @@ class BottomPanel(Menu):
             self.panel_state = States.EMPTY
             self.selected_enclosure = None
             self.selected_animal = None
+
+    def draw_text(self, x, y, text_surf):
+        pygame.draw.rect(self.screen, (160, 147, 142), (x, y, text_surf.get_width() + 2, text_surf.get_height() + 2))
+        self.screen.blit(text_surf, (x + 1, y + 1))
+
+    def update_blink(self, dt):
+        self.blink_timer += dt
+        if self.blink_timer > config.blink_speed:
+            self.blink_visible = False if self.blink_visible else True
+            self.blink_timer = 0.0

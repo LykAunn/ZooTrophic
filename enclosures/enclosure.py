@@ -17,6 +17,9 @@ class Enclosure:
         self.enclosure_size = 0
         self.animals_in_enclosure = 0
 
+        # State tiles
+        self.food_dishes = []
+
         # GLOW #
         self.glow_timer = 0
         self.glow_intensity = 0
@@ -252,3 +255,13 @@ class Enclosure:
     
     def add_animal_id(self, id):
         self.animals_id.append(id)
+
+    def get_nearest_food_tile(self, animal_pos):
+        nearest_tile = None
+        nearest_distance = 100
+        for food_tile in self.food_dishes:
+            distance = food_tile.distance_to(animal_pos)
+            if distance < nearest_distance:
+                nearest_tile = food_tile
+                nearest_distance = distance
+        return nearest_tile

@@ -1,0 +1,24 @@
+import math
+
+
+class FoodDish:
+    def __init__(self, x, y, id):
+        self.position = (x,y)
+        self.id = id
+        self.food_amount = 50
+        self.max_food_amount = 50
+        self.is_empty = False
+
+    def eat(self, amount):
+        self.food_amount -= amount
+        if self.food_amount <= 0:
+            self.food_amount = 0
+            self.is_empty = True
+
+    def replenish(self, amount):
+        new_amount = amount + self.food_amount
+        if not new_amount > self.max_food_amount:
+            self.food_amount = new_amount
+
+    def distance_to(self, animal_pos):
+        return math.sqrt((self.pos[0] - animal_pos[0])**2 - (self.pos[1] - animal_pos[1])**2)
