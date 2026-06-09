@@ -25,6 +25,18 @@ class Enclosure:
         self.glow_intensity = 0
         self.target_glow = 0
 
+    def to_dict(self):
+        return {
+            "enclosure_id": self.enclosure_id,
+            "fence_tiles": self.fence_tiles,
+            "interior_tiles": self.interior_tiles,
+            "biome_type": self.biome_type,
+            "color": self.color,
+            "animals_id": self.animals_id,
+            "fence_orientation": self.fence_orientation,
+            "food_tiles_id": [food.object_id for food in self.food_dishes]
+        }
+
     def tile_within_enclosure(self, x, y):
         return (x, y) in self.fence_tiles or (x, y) in self.interior_tiles
     

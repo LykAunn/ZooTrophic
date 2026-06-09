@@ -11,6 +11,9 @@ class AnimalManager:
         self.state = "IDLE"
         self.clear_menu = None
 
+    def to_dict(self):
+        pass
+
     def draw(self, camera_offset):
         if self.animal_set:
             for animal in self.animal_set:

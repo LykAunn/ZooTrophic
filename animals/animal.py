@@ -33,6 +33,8 @@ class Animal:
         self.thirst = 50.0
         self.energy = 100.0
         self.size = 1.0
+        self.food_remaining = True # Any food left in enclosure, if not it will continue wandering around (maybe can
+        #                            implement something like anxious walking
 
         #Psychological stats TODO
         self.happiness = 100
@@ -73,6 +75,9 @@ class Animal:
         self.max_number_of_animals = 2
         self.stat_update_timer = 3 # Stat update interval
         self.stat_timer = 0.0
+
+    def to_dict(self):
+        pass
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
@@ -121,15 +126,18 @@ class Animal:
 
     def decide_next_action(self):
         """Choose what to do next, prioritises hunger and thirst. If not then wander around"""
+        random_chance = random.randrange(1, 5)
+        if self.target_coords != self.coords:
+            self.start_moving()
+            return
         #if self.thirst > 70:
             #self.find_water_source()
-        if self.hunger > 70: #TODO: keeps finding food source when deciding next action, should start moving instead
+        if self.hunger > 70 and (self.food_remaining or random_chance < 3):
             self.find_food_source()
+            return
         else:
             if self.target_coords == self.coords:
                 self.find_new_tile()
-            else:
-                self.start_moving()
 
 # --- Pathfinding ---
 
@@ -263,8 +271,13 @@ class Animal:
         #print(self.hunger)
 
     def find_food_source(self):
+        print("find food")
         food_tile = self.enclosure.get_nearest_food_tile(self.coords)
         if food_tile:
+            if self.coords == food_tile.position: # if at food tile, eat
+                self.eat_food(food_tile)
+                return
+
             self.target_coords = food_tile.position
             self.target_world_pixel_coords = (food_tile.position[0] * config.TILE_SIZE,
                                               food_tile.position[1] * config.TILE_SIZE)
@@ -273,6 +286,13 @@ class Animal:
                 self.start_moving()
         else:
             return
+
+    def eat_food(self, food_tile):
+        amount_of_food = self.size * random.randrange(1,5)
+        if food_tile.eat(amount_of_food):
+            self.hunger -= amount_of_food * 15
+        else:
+            self.food_remaining = False
 
     def find_water_source(self):
         pass
