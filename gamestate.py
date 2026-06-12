@@ -1,4 +1,5 @@
 from objects.object_manager import ObjectManager
+from save_manager import SaveManager
 from world.camera import Camera
 from enclosures.enclosure_manager import EnclosureManager
 from ui.menu_manager import MenuManager
@@ -39,6 +40,7 @@ class GameManager:
         self.enclosure_manager.clear_menu = self.clear_menu
         self.animal_manager.clear_menu = self.clear_menu
         self.object_manager = ObjectManager(self.tile_index, self.screen)
+        self.save_manager = SaveManager(self.game_clock, self.animal_manager, self.enclosure_manager, self.object_manager, self.player)
 
     def update(self, dt, mouse_pos):
         grid_pos = (mouse_pos[0] // config.TILE_SIZE, mouse_pos[1] // config.TILE_SIZE)
@@ -99,6 +101,8 @@ class GameManager:
                     self.game_clock.pause()
                 else:
                     self.game_clock.unpause()
+            elif event.key == pygame.K_c:
+                self.save_manager.save()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             # # Deselect enclosure first if one is selected, consume the click

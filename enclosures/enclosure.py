@@ -25,17 +25,40 @@ class Enclosure:
         self.glow_intensity = 0
         self.target_glow = 0
 
+    # ----- SAVE FUNCTION -----
+
     def to_dict(self):
         return {
             "enclosure_id": self.enclosure_id,
-            "fence_tiles": self.fence_tiles,
-            "interior_tiles": self.interior_tiles,
+            "fence_tiles": [list(tile) for tile in self.fence_tiles],
+            "interior_tiles": [list(tile) for tile in self.interior_tiles],
             "biome_type": self.biome_type,
             "color": self.color,
             "animals_id": self.animals_id,
-            "fence_orientation": self.fence_orientation,
-            "food_tiles_id": [food.object_id for food in self.food_dishes]
+            "fence_orientation": {f"{x},{y}": index
+                                for (x, y), index in self.fence_orientation.items()},
+            "food_tiles_id": [food.id for food in self.food_dishes]
         }
+
+    @classmethod
+    def from_dict(cls, data, tile_index):
+        enclosure = cls(data["enclosure_id"], tile_index)
+        enclosure.fence_tiles = {tuple(t) for t in data["fence_tiles"]}
+        enclosure.interior_tiles = {tuple(t) for t in data["interior_tiles"]}
+        enclosure.fence_orientation = {
+            tuple(int(v) for v in k.split(",")): idx
+            for k, idx in data["fence_orientation"].items()
+        }
+        enclosure.biome_type = data["biome_type"]
+        enclosure.state = "READY"
+
+        # Rebuild tile index
+        for tile in enclosure.fence_tiles:
+            tile_index.register_tile(tile[0], tile[1], "fence", enclosure.enclosure_id)
+        for tile in enclosure.interior_tiles:
+            tile_index.register_tile(tile[0], tile[1], "interior", enclosure.enclosure_id)
+
+        return enclosure
 
     def tile_within_enclosure(self, x, y):
         return (x, y) in self.fence_tiles or (x, y) in self.interior_tiles

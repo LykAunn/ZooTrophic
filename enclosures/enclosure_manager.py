@@ -43,7 +43,25 @@ class EnclosureManager:
         self.fence_images.append(self.clip(self.fence, (1,3), 32,32))
         self.fence_images.append(self.clip(self.fence, (2,3), 32,32))
 
-    def update(self, grid_pos, dt): 
+    # ----- SAVE FUNCTION -----
+
+    def to_dict(self):
+        return {
+            "enclosures": [enclosure.to_dict() for enclosure in self.enclosures],
+            "next_id": self.next_id,
+            "fences_remaining": self.fences_remaining,
+        }
+
+    def from_dict(self, data):
+        self.enclosures = set()
+        self.next_id = data["next_id"]
+        self.fences_remaining = data["fences_remaining"]
+
+        for enclosure_data in data["enclosures"]:
+            enclosure = Enclosure.from_dict(enclosure_data, self.tile_index)
+            self.enclosures.add(enclosure)
+
+    def update(self, grid_pos, dt):
         self.grid_x, self.grid_y = grid_pos
 
         # Check if any other enclosure is selected
@@ -58,7 +76,7 @@ class EnclosureManager:
         if self.is_drawing and self.selected_enclosure and self.get_enclosure_at(self.grid_x, self.grid_y) is None and self.fences_remaining > 0:
             self.selected_enclosure.add_tile(self.grid_x, self.grid_y)
             self.fences_remaining -= 1
-    
+
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.state == "READY":
@@ -89,7 +107,7 @@ class EnclosureManager:
                 if enclosure.tile_within_enclosure(x, y):
                     return enclosure
             return None
-    
+
     def select_enclosure(self):
         self.selected_enclosure = self.get_enclosure_at(self.grid_x, self.grid_y)
 
@@ -135,7 +153,7 @@ class EnclosureManager:
 
         # Create rect for region that is wanted
         clipR = pygame.Rect(x, y, x_size, y_size)
-        
+
         # Extract subsurface
         image = surface.subsurface(clipR)
         return image.copy()
@@ -146,7 +164,7 @@ class EnclosureManager:
                 return enclosure.enclosure_id
 
         return None
-            
+
     def draw_enclosures(self, dt, tiles, start_x, start_y):
         camera_offset_x = start_x * config.TILE_SIZE
         camera_offset_y = start_y * config.TILE_SIZE
@@ -200,7 +218,7 @@ class EnclosureManager:
         #         if image_index is None:
         #             image_index = 1
 
-                
+
         #         self.screen.blit(self.fence_images[image_index], (screenx, screeny))
 
         #     # Handle glow animation

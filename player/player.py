@@ -7,6 +7,16 @@ class Player:
         self.world_y = 11
         self.speed = config.player_speed
 
+    def to_dict(self):
+        return {
+            "world_x": self.world_x,
+            "world_y": self.world_y
+        }
+
+    def from_dict(self, data):
+        self.world_x = data["world_x"]
+        self.world_y = data["world_y"]
+
     def update(self, dt):
         keys = pygame.key.get_pressed()
         

@@ -12,7 +12,18 @@ class AnimalManager:
         self.clear_menu = None
 
     def to_dict(self):
-        pass
+        return {
+            "animals": [animal.to_dict() for animal in self.animal_set],
+            "next_id": self.next_id,
+        }
+
+    def from_dict(self, data):
+        self.animal_set = set()
+        self.next_id = data["next_id"]
+
+        for animal_data in data["animals"]:
+            animal = Animal.from_dict(animal_data)
+            self.animal_set.add(animal)
 
     def draw(self, camera_offset):
         if self.animal_set:

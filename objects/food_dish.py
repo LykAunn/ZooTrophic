@@ -8,6 +8,22 @@ class FoodDish:
         self.food_amount = 1
         self.max_food_amount = 50
         self.is_empty = False
+        self.enclosure_id = None
+
+    def to_dict(self):
+        return {
+            "position": self.position,
+            "id": self.id,
+            "food_amount": self.food_amount,
+            "max_food_amount": self.max_food_amount,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        food_dish = FoodDish(data["position"][0], data["position"][1], data["id"])
+        food_dish.food_amount = data["food_amount"]
+        food_dish.max_food_amount = data["max_food_amount"]
+        return food_dish
 
     def eat(self, amount):
         if self.is_empty:

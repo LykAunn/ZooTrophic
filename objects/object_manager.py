@@ -17,6 +17,20 @@ class ObjectManager:
         self.food = pygame.image.load('resources/food.png').convert_alpha()
         self.food = pygame.transform.scale(self.food, (int(config.TILE_SIZE), int(config.TILE_SIZE)))
 
+    def to_dict(self):
+        return {
+            "objects": [obj.to_dict() for obj in self.objects.values()],
+            "next_id": self.next_id
+        }
+
+    def from_dict(self, data):
+        self.next_id = data["next_id"]
+        self.objects = {}
+
+        for obj in data["objects"]:
+            object = FoodDish.from_dict(obj)
+            self.objects[obj["id"]] = object
+
     def get_object_by_id(self, object_id):
         if object_id in self.objects:
             return self.objects[object_id]
@@ -26,6 +40,7 @@ class ObjectManager:
         x = pos[0]
         y = pos[1]
         food_dish = FoodDish(x, y, self.next_id)
+        food_dish.enclosure_id = enclosure.enclosure_id
         self.objects[self.next_id] = food_dish
         self.tile_index.register_tile(x, y, "food_dish", enclosure.enclosure_id)
         enclosure.food_dishes.append(food_dish)
@@ -40,7 +55,7 @@ class ObjectManager:
 
     def start_placement(self):
         # Sets up hovering state, creates a preview
-        if self.state is not "HOVERING":
+        if self.state != "HOVERING":
             self.state = "HOVERING"
             self.pending_object = "food_dish"
 

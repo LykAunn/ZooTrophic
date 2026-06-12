@@ -26,6 +26,22 @@ class GameClock:
         # Cached values
         self.game_dt = 0 # In game dt (everything other than ui)
 
+    # ----- SAVE FUNCTION -----
+
+    def to_dict(self):
+        return {
+            "time": self.time,
+            "day": self.day,
+            "month": self.month,
+            "year": self.year,
+        }
+
+    def from_dict(self, data):
+        self.time = data["time"]
+        self.day = data["day"]
+        self.month = data["month"]
+        self.year = data["year"]
+
     def update(self, dt):
         """Updates game clock and returns scaled dt for fast-forwarding"""
         if self.paused:

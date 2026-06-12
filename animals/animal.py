@@ -77,7 +77,32 @@ class Animal:
         self.stat_timer = 0.0
 
     def to_dict(self):
-        pass
+        return {
+            "id": self.animal_id,
+            "species": self.species,
+            "enclosure_id": self.enclosure_id if self.enclosure else None,
+            "coords": list(self.coords),
+            "hunger": int(self.hunger),
+            "thirst": int(self.thirst),
+            "energy": int(self.energy),
+            "health": int(self.health),
+            "happiness": int(self.happiness),
+            "name": self.name,
+            "sex": self.sex,
+            "age": self.age
+        }
+
+    @classmethod
+    def from_dict(cls, data, screen):
+        animal = cls(data["id"], data["enclosure_id"], data["coords"][0], data["coords"][1], data["species"],
+        'resources/chicken.png', 'resources/Chicken_right.png',screen, data["age"])
+        animal.hunger = data["hunger"]
+        animal.thirst = data["thirst"]
+        animal.energy = data["energy"]
+        animal.happiness = data["happiness"]
+        animal.name = data["name"]
+        animal.sex = data["sex"]
+        return animal
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
