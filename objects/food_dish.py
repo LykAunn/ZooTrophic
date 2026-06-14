@@ -16,6 +16,7 @@ class FoodDish:
             "id": self.id,
             "food_amount": self.food_amount,
             "max_food_amount": self.max_food_amount,
+            "enclosure_id": self.enclosure_id
         }
 
     @classmethod
@@ -23,6 +24,7 @@ class FoodDish:
         food_dish = FoodDish(data["position"][0], data["position"][1], data["id"])
         food_dish.food_amount = data["food_amount"]
         food_dish.max_food_amount = data["max_food_amount"]
+        food_dish.enclosure_id = data["enclosure_id"]
         return food_dish
 
     def eat(self, amount):

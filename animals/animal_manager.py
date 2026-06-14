@@ -22,7 +22,7 @@ class AnimalManager:
         self.next_id = data["next_id"]
 
         for animal_data in data["animals"]:
-            animal = Animal.from_dict(animal_data)
+            animal = Animal.from_dict(animal_data, self.screen)
             self.animal_set.add(animal)
 
     def draw(self, camera_offset):

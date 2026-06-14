@@ -102,10 +102,13 @@ class Animal:
         animal.happiness = data["happiness"]
         animal.name = data["name"]
         animal.sex = data["sex"]
+        animal.find_new_tile()
+        animal.start_moving()
         return animal
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
+        self.enclosure_id = enclosure.enclosure_id
 
     def set_animal_state(self, state):
         self.state = state

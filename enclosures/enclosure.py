@@ -31,7 +31,6 @@ class Enclosure:
         return {
             "enclosure_id": self.enclosure_id,
             "fence_tiles": [list(tile) for tile in self.fence_tiles],
-            "interior_tiles": [list(tile) for tile in self.interior_tiles],
             "biome_type": self.biome_type,
             "color": self.color,
             "animals_id": self.animals_id,
@@ -44,11 +43,16 @@ class Enclosure:
     def from_dict(cls, data, tile_index):
         enclosure = cls(data["enclosure_id"], tile_index)
         enclosure.fence_tiles = {tuple(t) for t in data["fence_tiles"]}
-        enclosure.interior_tiles = {tuple(t) for t in data["interior_tiles"]}
         enclosure.fence_orientation = {
             tuple(int(v) for v in k.split(",")): idx
             for k, idx in data["fence_orientation"].items()
         }
+
+        enclosure.flood_bfs(enclosure.get_midpoint())
+        enclosure.interior_tiles = set(enclosure.fill_queue)
+        enclosure.fill_queue = []
+        enclosure.state = "COMPLETE"
+
         enclosure.biome_type = data["biome_type"]
         enclosure.state = "READY"
 
